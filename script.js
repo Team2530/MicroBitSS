@@ -94,6 +94,10 @@ fileInput.onchange = function () {
 document.addEventListener("keyup", (event) => {
   if (event.key == "r" && timePassed == initialTime) {
     toggleScores();
+  } else if (event.key == "s") {
+    startTimer();
+  } else if (event.key == "p" && timePassed != 0) {
+    stopTimer();
   } else if ("12345678".includes(event.key) && timePassed != 0) {
     let action = KEYMAP[parseInt(event.key) - 1];
     console.log(`${event.key}: ${action}`);
