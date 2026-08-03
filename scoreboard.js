@@ -1,4 +1,5 @@
 let teamScores = [0, 0, 0, 0, 0, 0];
+let teamWins = [0, 0, 0, 0, 0, 0];
 const matchTableHeaders = `
         <tr>
             <th>Match</th>
@@ -89,33 +90,52 @@ function createScoreboard() {
 }
 
 function updateTeamScores() {
-  if(matchesJSON != null) {
+  if (matchesJSON != null) {
     Object.keys(teamMap).forEach(key => {
-      teamMap[key] = 0;
+      teamMap[key] = { score: 0, wins: 0, rank: 0 };
     });
 
-    totalMatches = Object.keys(matchesJSON).join().match(/m\d+/g).length;
-    for (i = 0; i < totalMatches; ++i) {
-      match = "m" + (i + 1);
-      if(matchesJSON[match].rs !== undefined) {
-        if (matchesJSON[match].rs !== undefined) {
-          [matchesJSON[match].red1, matchesJSON[match].red2].forEach(id => {
-              teamMap[getTeamName(id)] += matchesJSON[match].rs;
-          });
-        }
+    const totalMatches = Object.keys(matchesJSON).join().match(/m\d+/g).length;
+
+    for (let i = 0; i < totalMatches; ++i) {
+      const match = "m" + (i + 1);
+
+      if (matchesJSON[match].rs == null || matchesJSON[match].bs == null) {
+        console.warn(`Skipping match ${match} due to missing scores.`);
+        continue;
       }
 
-      if(matchesJSON[match].bs !== undefined) {
-        if (matchesJSON[match].bs !== undefined) {
-          [matchesJSON[match].blue1, matchesJSON[match].blue2].forEach(id => {
-              teamMap[getTeamName(id)] += matchesJSON[match].bs;
-          });
-        }
+      [matchesJSON[match].red1, matchesJSON[match].red2].forEach(id => {
+        teamMap[getTeamName(id)].score += matchesJSON[match].rs;
+      });
+
+      [matchesJSON[match].blue1, matchesJSON[match].blue2].forEach(id => {
+        teamMap[getTeamName(id)].score += matchesJSON[match].bs;
+      });
+
+      if (matchesJSON[match].rs > matchesJSON[match].bs) {
+        [matchesJSON[match].red1, matchesJSON[match].red2].forEach(id => {
+          teamMap[getTeamName(id)].wins += 1;
+        });
+      } else if (matchesJSON[match].bs > matchesJSON[match].rs) {
+        [matchesJSON[match].blue1, matchesJSON[match].blue2].forEach(id => {
+          teamMap[getTeamName(id)].wins += 1;
+        });
       }
     }
 
+    const sortedTeams = Object.entries(teamMap)
+      .sort((a, b) => b[1].wins - a[1].wins); 
+
+    sortedTeams.forEach(([teamName, data], index) => {
+      teamMap[teamName].rank = index + 1; 
+    });
+
     Object.keys(teamMap).forEach(key => {
-      document.getElementById(key).innerHTML = teamMap[key];
+      const teamElement = document.getElementById(key);
+      if (teamElement) {
+        teamElement.innerHTML = `Rank: ${teamMap[key].rank} | Wins: ${teamMap[key].wins}`;
+      }
     });
   }
 }
