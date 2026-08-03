@@ -67,7 +67,7 @@ var penalties = [0, 0];
 
 // load matches.json (the default example) if "preload" is set to true
 window.onload = function () {
-  fetch("./Week2Quals.json")
+  fetch("matches/Week2Quals.json")
     .then((text) => text.text())
     .then((json) => JSON.parse(json))
     .then((json) => {
