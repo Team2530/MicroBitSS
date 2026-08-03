@@ -79,12 +79,17 @@ window.onload = function () {
 };
 
 fileInput.onchange = function () {
-  reader = new FileReader();
+  var reader = new FileReader(); // Fixed missing 'var/const' syntax here
   reader.readAsText(fileInput.files[0]);
 
   reader.onload = function () {
     try {
       matchesJSON = JSON.parse(reader.result);
+      if (!matchesJSON.customTeams) {
+        matchesJSON.customTeams = ["", "", "", "", "", ""];
+      }
+
+      console.log("JSON successfully loaded into global variable matchesJSON:", matchesJSON);
       matchNumber = 1;
       loadMatch(matchNumber);
       createScoreboard();
@@ -93,6 +98,7 @@ fileInput.onchange = function () {
     }
   };
 };
+
 
 document.addEventListener("keyup", (event) => {
   if (event.key == "r" && timePassed == initialTime) {
@@ -195,6 +201,14 @@ function stopTimer() {
   } else if (initialTime - timePassed <= 10 && timePassed != initialTime) {
     timeDisplay.classList = "timer-yellow";
   }
+}
+
+function settings() {
+  const url = "settings.html";
+  const windowName = "MBSS-config";
+  const windowFeatures = "width=500,height=600,resizable=yes,scrollbars=yes" 
+
+  window.open(url, windowName, windowFeatures);
 }
 
 function forceEnd() { // Force end used for debug and test purposes. 
