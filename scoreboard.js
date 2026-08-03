@@ -38,8 +38,8 @@ function createScoreboard() {
         tr.id = match;
         tr.innerHTML = `
                     <td>${i + 1}</td>
-                    <td>${matchesJSON[match].red}</td>
-                    <td>${matchesJSON[match].blue}</td>
+                    <td>${getAllianceName(matchesJSON[match], "red")}</td>
+                    <td>${getAllianceName(matchesJSON[match], "blue")}</td>
                     <td id="${match + "r"}">
                     <div class="score-content">
                       <span>---</span>
@@ -52,13 +52,16 @@ function createScoreboard() {
                     </td> `;
         matchTable.appendChild(tr);
 
-        if (teamMap[matchesJSON[match].red] === undefined) {
-          teamMap[matchesJSON[match].red] = 0;
-        }
-
-        if(teamMap[matchesJSON[match].blue] === undefined) {
-          teamMap[matchesJSON[match].blue] = 0;
-        }
+        [matchesJSON[match].red1,
+        matchesJSON[match].red2,
+        matchesJSON[match].blue1,
+        matchesJSON[match].blue2].forEach(id => {
+           const name = getTeamName(id);
+       
+           if (teamMap[name] === undefined) {
+               teamMap[name] = 0;
+           }
+       });
     }
 
     teamTable.innerHTML = "";
@@ -95,11 +98,19 @@ function updateTeamScores() {
     for (i = 0; i < totalMatches; ++i) {
       match = "m" + (i + 1);
       if(matchesJSON[match].rs !== undefined) {
-        teamMap[matchesJSON[match].red] += matchesJSON[match].rs;
+        if (matchesJSON[match].rs !== undefined) {
+          [matchesJSON[match].red1, matchesJSON[match].red2].forEach(id => {
+              teamMap[getTeamName(id)] += matchesJSON[match].rs;
+          });
+        }
       }
 
       if(matchesJSON[match].bs !== undefined) {
-        teamMap[matchesJSON[match].blue] += matchesJSON[match].bs;
+        if (matchesJSON[match].bs !== undefined) {
+          [matchesJSON[match].blue1, matchesJSON[match].blue2].forEach(id => {
+              teamMap[getTeamName(id)] += matchesJSON[match].bs;
+          });
+        }
       }
     }
 
