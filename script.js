@@ -21,6 +21,9 @@ teleop.preload = "auto";
 // seconds for timer
 var initialTime = 140;
 
+// rankings
+const teams = []
+
 /**
  * Times for the "teleop" and "endgame" sounds to play,
  * if they are null, the sound will not play
@@ -64,7 +67,7 @@ var penalties = [0, 0];
 
 // load matches.json (the default example) if "preload" is set to true
 window.onload = function () {
-  fetch("./matches.json")
+  fetch("./Week2Quals.json")
     .then((text) => text.text())
     .then((json) => JSON.parse(json))
     .then((json) => {
@@ -98,6 +101,8 @@ document.addEventListener("keyup", (event) => {
     startTimer();
   } else if (event.key == "p" && timePassed != 0) {
     stopTimer();
+  } else if (event.key == "e" && timePassed != 0) {
+    forceEnd();
   } else if ("12345678".includes(event.key) && timePassed != 0) {
     let action = KEYMAP[parseInt(event.key) - 1];
     console.log(`${event.key}: ${action}`);
@@ -190,6 +195,18 @@ function stopTimer() {
   } else if (initialTime - timePassed <= 10 && timePassed != initialTime) {
     timeDisplay.classList = "timer-yellow";
   }
+}
+
+function forceEnd() { // Force end used for debug and test purposes. 
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  timePassed = initialTime; 
+  timeDisplay.innerHTML = formatDisplayTime(0); 
+  displayCircle.classList = "circle-red"; 
+  timeDisplay.classList.add("timer-end");
+  end.play(); 
 }
 
 function changeCirclePercent() {

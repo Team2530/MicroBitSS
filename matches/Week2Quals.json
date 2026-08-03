@@ -1,16 +1,14 @@
 {
-   "preload": false,
+   "preload": true,
    "bracket": true,
-   "icons" : {
-      "Alliance 1": "kiwi.svg"
-   },
+   "icons" : {},
    "m1": {
-      "red": "Alliance 1",
-      "blue": "Alliance 8"
+      "red": "The Electric Bees + Ferrari Cheeseburgers",
+      "blue": "Team 1 + Team 2"
    },
    "m2": {
-      "red": "Alliance 4",
-      "blue": "Alliance 5"
+      "red": "Team 1 + Team 6",
+      "blue": "Team 3 + Team 5"
    },
    "m3": {
       "red": "Alliance 2",
@@ -51,13 +49,5 @@
    "m12": {
       "red": "Winner of m10",
       "blue": "Winner of m9"
-   },
-   "m13": {
-      "red": "Loser of m12",
-      "blue": "Winner of m11"
-   },
-   "m14": {
-      "red": "Winner of m12",
-      "blue": "Winner of m13"
    }
 }
