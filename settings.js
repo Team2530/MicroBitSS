@@ -10,31 +10,33 @@ document.getElementById('save-btn').addEventListener('click', () => {
     };
 
     if (window.opener && !window.opener.closed) {
+
         if (window.opener.matchesJSON) {
-            let jsonString = JSON.stringify(window.opener.matchesJSON);
 
             for (let i = 1; i <= 6; i++) {
-                const placeholder = `Team ${i}`;
-                const userEnteredName = customNames[placeholder];
+                const teamKey = `Team ${i}`;
+                const newName = customNames[teamKey];
 
-                if (userEnteredName !== "") {
-                    const searchRegex = new RegExp(placeholder, "g");
-                    jsonString = jsonString.replace(searchRegex, userEnteredName);
+                if (newName !== "") {
+                    window.opener.matchesJSON.teams[teamKey].name = newName;
                 }
             }
-            window.opener.matchesJSON = JSON.parse(jsonString);
+
             if (typeof window.opener.loadMatch === 'function') {
                 window.opener.loadMatch(window.opener.matchNumber);
             }
+
             if (typeof window.opener.createScoreboard === 'function') {
                 window.opener.createScoreboard();
             }
-            alert("Team names successfully updated across all matches.");
+
+            alert("Team names successfully updated.");
             window.close();
-            
+
         } else {
             alert("Please load your .json template or upload a file first.");
         }
+
     } else {
         alert("Main window is unavailable.");
     }
