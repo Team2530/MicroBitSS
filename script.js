@@ -94,7 +94,8 @@ fileInput.onchange = function () {
       loadMatch(matchNumber);
       createScoreboard();
     } catch (error) {
-      alert("Unable to parse file!");
+      console.error(error);
+      alert(error.message);
     }
   };
 };
@@ -310,15 +311,8 @@ function toggleTeams(resetScores, toggleIcons) {
 }
 
 function changeIcons() {
-  if (matchesJSON != null && matchesJSON.icons != null) {
-    red = matchesJSON.icons[matchesJSON["m" + matchNumber].red];
-    blue = matchesJSON.icons[matchesJSON["m" + matchNumber].blue];
-    redIcon.src = "./team-icons/" + (red == null ? "default-red.svg" : red);
-    blueIcon.src = "./team-icons/" + (blue == null ? "default-blue.svg" : blue);
-  } else {
-    redIcon.src = "./team-icons/default-red.svg";
-    blueIcon.src = "./team-icons/default-blue.svg";
-  }
+  redIcon.src = "./team-icons/default-red.svg";
+  blueIcon.src = "./team-icons/default-blue.svg";
 }
 
 function toggleScores() {
@@ -408,23 +402,47 @@ function toggleScores() {
   }
 }
 
+function getTeamName(id) {
+  if (id == null) return "";
+
+  // already a string like "Winner of m1"
+  if (typeof id === "string") return id;
+
+  return matchesJSON.teams["Team " + id]?.name ?? ("Team " + id);
+}
+
+function getAllianceName(match, color) {
+  const t1 = getTeamName(match[color + "1"]);
+  const t2 = getTeamName(match[color + "2"]);
+  return `${t1} & ${t2}`;
+}
+
+
 function loadMatch(number) {
   document
     .getElementById("match-selector")
     .classList.replace("no-matches", "matches");
 
+  const totalMatches = Object.keys(matchesJSON)
+    .filter(k => /^m\d+$/.test(k))
+    .length;
+
   matchNumber = Math.max(
-    Math.min(Object.keys(matchesJSON).join().match(/m/g).length, number),
+    Math.min(totalMatches, number),
     1
   );
 
   if (matchesJSON.bracket == false) {
-    matchData = matchesJSON["m" + matchNumber];
-    redTitle.innerHTML = matchData.red;
-    blueTitle.innerHTML = matchData.blue;
+    const matchData = matchesJSON["m" + matchNumber];
 
-    document.getElementById("red-reveal-name").innerHTML = matchData.red;
-    document.getElementById("blue-reveal-name").innerHTML = matchData.blue;
+    const redAlliance = getAllianceName(matchData, "red");
+    const blueAlliance = getAllianceName(matchData, "blue");
+    
+    redTitle.innerHTML = redAlliance;
+    blueTitle.innerHTML = blueAlliance;
+    
+    document.getElementById("red-reveal-name").innerHTML = redAlliance;
+    document.getElementById("blue-reveal-name").innerHTML = blueAlliance;
   } else {
     red = findTeamName(matchesJSON["m" + matchNumber].red);
     blue = findTeamName(matchesJSON["m" + matchNumber].blue);
@@ -449,6 +467,9 @@ function loadMatch(number) {
 }
 
 function findTeamName(info) {
+  if (info == null) {
+    return "";
+  }
   if (info.toUpperCase().match(/(WINNER|LOSER) OF M\d+/g)) {
     match = matchesJSON[info.match(/m\d+/)];
     // Find team based on what the info says, if winner then use the
