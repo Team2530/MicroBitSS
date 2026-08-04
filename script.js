@@ -46,28 +46,28 @@ blueTitle.innerHTML = "Blue";
 redDisplay.appendChild(redTitle);
 blueDisplay.appendChild(blueTitle);
 
+// Button keymap
+KEYMAP = [
+  ["s", 0, 1],
+  ["s", 0, -1],
+  ["s", 1, 1],
+  ["s", 1, -1],
+  ["p", 0, 1],
+  ["p", 0, -1],
+  ["p", 1, 1],
+  ["p", 1, -1],
+];
+
 var matchesJSON = null;
 var matchNumber = 1;
 
 // Red, blue
-var points = {red:0, blue:0};
-var penalties = {red:0, blue:0};
-const resetAllPoints = () => {points = {red:0, blue:0};penalties = {red:0, blue:0};}
-
-const KEYMAP = [
-  ["s","red", 1],
-  ["s","red", -1],
-  ["s","blue", 1],
-  ["s","blue", -1],
-  ["p","red", 1],
-  ["p","red", -1],
-  ["p","blue", 1],
-  ["p","blue", -1],
-];
+var points = [0, 0];
+var penalties = [0, 0];
 
 // load matches.json (the default example) if "preload" is set to true
 window.onload = function () {
-  fetch("matches/Week2Quals.json")
+  fetch("./Week2Quals.json")
     .then((text) => text.text())
     .then((json) => JSON.parse(json))
     .then((json) => {
@@ -79,26 +79,21 @@ window.onload = function () {
 };
 
 fileInput.onchange = function () {
-  var reader = new FileReader(); // Fixed missing 'var/const' syntax here
+  reader = new FileReader();
   reader.readAsText(fileInput.files[0]);
 
   reader.onload = function () {
     try {
       matchesJSON = JSON.parse(reader.result);
-      if (!matchesJSON.customTeams) {
-        matchesJSON.customTeams = ["", "", "", "", "", ""];
-      }
-
-      console.log("JSON successfully loaded into global variable matchesJSON:", matchesJSON);
       matchNumber = 1;
       loadMatch(matchNumber);
       createScoreboard();
     } catch (error) {
-      console.error(error);
-      alert(error.message);
+      alert("Unable to parse file!");
     }
   };
 };
+
 document.addEventListener("keyup", (event) => {
   if (event.key == "r" && timePassed == initialTime) {
     toggleScores();
@@ -109,7 +104,7 @@ document.addEventListener("keyup", (event) => {
   } else if (event.key == "e" && timePassed != 0) {
     forceEnd();
   } else if ("12345678".includes(event.key) && timePassed != 0) {
-    const action = KEYMAP[parseInt(event.key) - 1];
+    let action = KEYMAP[parseInt(event.key) - 1];
     console.log(`${event.key}: ${action}`);
     if (action[0] == "s") {
       points[action[1]] = Math.max(0, points[action[1]] + action[2]);
@@ -117,11 +112,11 @@ document.addEventListener("keyup", (event) => {
       penalties[action[1]] = Math.max(0, penalties[action[1]] + action[2]);
     }
 
-    updateScore(false, points.red);
-    updateScore(true, points.blue);
+    updateScore(false, points[0]);
+    updateScore(true, points[1]);
 
-    updatePenalties(false, penalties.red);
-    updatePenalties(true, penalties.blue);
+    updatePenalties(false, penalties[0]);
+    updatePenalties(true, penalties[1]);
   }
 });
 
@@ -202,14 +197,6 @@ function stopTimer() {
   }
 }
 
-function settings() {
-  const url = "settings.html";
-  const windowName = "MBSS-config";
-  const windowFeatures = "width=500,height=600,resizable=yes,scrollbars=yes" 
-
-  window.open(url, windowName, windowFeatures);
-}
-
 function forceEnd() { // Force end used for debug and test purposes. 
   if (timerInterval) {
     clearInterval(timerInterval);
@@ -236,7 +223,8 @@ function resetTimer() {
     loadMatch(++matchNumber);
   }
 
-  resetAllPoints();
+  points = [0, 0];
+  penalties = [0, 0];
 
   setTimeout(
     () => {
@@ -308,8 +296,15 @@ function toggleTeams(resetScores, toggleIcons) {
 }
 
 function changeIcons() {
-  redIcon.src = "./team-icons/default-red.svg";
-  blueIcon.src = "./team-icons/default-blue.svg";
+  if (matchesJSON != null && matchesJSON.icons != null) {
+    red = matchesJSON.icons[matchesJSON["m" + matchNumber].red];
+    blue = matchesJSON.icons[matchesJSON["m" + matchNumber].blue];
+    redIcon.src = "./team-icons/" + (red == null ? "default-red.svg" : red);
+    blueIcon.src = "./team-icons/" + (blue == null ? "default-blue.svg" : blue);
+  } else {
+    redIcon.src = "./team-icons/default-red.svg";
+    blueIcon.src = "./team-icons/default-blue.svg";
+  }
 }
 
 function toggleScores() {
@@ -325,11 +320,11 @@ function toggleScores() {
   } else {
     // update scores in reveal divs
     document.getElementById("red-reveal-points").innerHTML =
-      points.red + penalties.blue;
-    document.getElementById("red-reveal-penalties").innerHTML = penalties.red;
+      points[0] + penalties[1];
+    document.getElementById("red-reveal-penalties").innerHTML = penalties[0];
     document.getElementById("blue-reveal-points").innerHTML =
-      points.blue + penalties.red;
-    document.getElementById("blue-reveal-penalties").innerHTML = penalties.blue;
+      points[1] + penalties[0];
+    document.getElementById("blue-reveal-penalties").innerHTML = penalties[1];
 
     winnerDiv = document.createElement("div");
     winnerDiv.id = "winner";
@@ -343,21 +338,20 @@ function toggleScores() {
       blueReveal.removeChild(blueReveal.firstChild);
     }
 
-    var winner = "";
-    const finalPoints = {red:points.red + penalties.blue,blue:points.blue + penalties.red};
+    winner = "";
 
     // Winner logic
-    if (finalPoints.red > finalPoints.blue) {
+    if (points[0] - penalties[0] > points[1] - penalties[1]) {
       redReveal.insertBefore(winnerDiv, redReveal.firstChild);
       winner = "red";
-    } else if (finalPoints.red < finalPoints.blue) {
+    } else if (points[0] - penalties[0] < points[1] - penalties[1]) {
       blueReveal.insertBefore(winnerDiv, blueReveal.firstChild);
       winner = "blue";
-    } else if (finalPoints.red == finalPoints.blue) {
-      if (penalties.red < penalties.blue) {
+    } else if (points[0] - penalties[0] == points[1] - penalties[1]) {
+      if (penalties[0] < penalties[1]) {
         redReveal.insertBefore(winnerDiv, redReveal.firstChild);
         winner = "red";
-      } else if (penalties.red > penalties.blue) {
+      } else if (penalties[0] > penalties[1]) {
         blueReveal.insertBefore(winnerDiv, blueReveal.firstChild);
         winner = "blue";
       } else {
@@ -369,25 +363,25 @@ function toggleScores() {
 
     if (matchesJSON != null) {
       matchesJSON["m" + matchNumber].winner = winner;
-      matchesJSON["m" + matchNumber].rs = finalPoints.red;
-      matchesJSON["m" + matchNumber].bs = finalPoints.blue;
+      matchesJSON["m" + matchNumber].rs = points[0] + penalties[1];
+      matchesJSON["m" + matchNumber].bs = points[1] + penalties[0];
 
       // also update bracket/scoreboard
       if(winner == "") {
-        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${finalPoints.red}</span>`;
-        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${finalPoints.blue}</span>`;
+        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${points[0] + penalties[1]}</span>`;
+        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${points[1] + penalties[0]}</span>`;
       } else if(winner == "red") {
         document.getElementById("m" + matchNumber + "r").innerHTML = 
         `<div class="score-content">
-            <span>${finalPoints.red}</span>
+            <span>${points[0] + penalties[1]}</span>
             <img src="./svg/winner.svg">
           </div>`;
-        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${finalPoints.blue}</span>`;
+        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${points[1] + penalties[0]}</span>`;
       } else {
-        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${inalPoints.red}</span>`;
+        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${points[0] + penalties[1]}</span>`;
         document.getElementById("m" + matchNumber + "b").innerHTML = `
         <div class="score-content">
-            <span>${finalPoints.blue}</span>
+            <span>${points[1] + penalties[0]}</span>
             <img src="./svg/winner.svg">
           </div>`;
       }
@@ -400,47 +394,23 @@ function toggleScores() {
   }
 }
 
-function getTeamName(id) {
-  if (id == null) return "";
-
-  // already a string like "Winner of m1"
-  if (typeof id === "string") return id;
-
-  return matchesJSON.teams["Team " + id]?.name ?? ("Team " + id);
-}
-
-function getAllianceName(match, color) {
-  const t1 = getTeamName(match[color + "1"]);
-  const t2 = getTeamName(match[color + "2"]);
-  return `${t1} & ${t2}`;
-}
-
-
 function loadMatch(number) {
   document
     .getElementById("match-selector")
     .classList.replace("no-matches", "matches");
 
-  const totalMatches = Object.keys(matchesJSON)
-    .filter(k => /^m\d+$/.test(k))
-    .length;
-
   matchNumber = Math.max(
-    Math.min(totalMatches, number),
+    Math.min(Object.keys(matchesJSON).join().match(/m/g).length, number),
     1
   );
 
   if (matchesJSON.bracket == false) {
-    const matchData = matchesJSON["m" + matchNumber];
+    matchData = matchesJSON["m" + matchNumber];
+    redTitle.innerHTML = matchData.red;
+    blueTitle.innerHTML = matchData.blue;
 
-    const redAlliance = getAllianceName(matchData, "red");
-    const blueAlliance = getAllianceName(matchData, "blue");
-    
-    redTitle.innerHTML = redAlliance;
-    blueTitle.innerHTML = blueAlliance;
-    
-    document.getElementById("red-reveal-name").innerHTML = redAlliance;
-    document.getElementById("blue-reveal-name").innerHTML = blueAlliance;
+    document.getElementById("red-reveal-name").innerHTML = matchData.red;
+    document.getElementById("blue-reveal-name").innerHTML = matchData.blue;
   } else {
     red = findTeamName(matchesJSON["m" + matchNumber].red);
     blue = findTeamName(matchesJSON["m" + matchNumber].blue);
@@ -465,9 +435,6 @@ function loadMatch(number) {
 }
 
 function findTeamName(info) {
-  if (info == null) {
-    return "";
-  }
   if (info.toUpperCase().match(/(WINNER|LOSER) OF M\d+/g)) {
     match = matchesJSON[info.match(/m\d+/)];
     // Find team based on what the info says, if winner then use the

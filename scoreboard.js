@@ -1,5 +1,4 @@
 let teamScores = [0, 0, 0, 0, 0, 0];
-let teamWins = [0, 0, 0, 0, 0, 0];
 const matchTableHeaders = `
         <tr>
             <th>Match</th>
@@ -39,8 +38,8 @@ function createScoreboard() {
         tr.id = match;
         tr.innerHTML = `
                     <td>${i + 1}</td>
-                    <td>${getAllianceName(matchesJSON[match], "red")}</td>
-                    <td>${getAllianceName(matchesJSON[match], "blue")}</td>
+                    <td>${matchesJSON[match].red}</td>
+                    <td>${matchesJSON[match].blue}</td>
                     <td id="${match + "r"}">
                     <div class="score-content">
                       <span>---</span>
@@ -53,147 +52,63 @@ function createScoreboard() {
                     </td> `;
         matchTable.appendChild(tr);
 
-        [matchesJSON[match].red1,
-        matchesJSON[match].red2,
-        matchesJSON[match].blue1,
-        matchesJSON[match].blue2].forEach(id => {
-           const name = getTeamName(id);
-       
-           if (teamMap[name] === undefined) {
-               teamMap[name] = 0;
-           }
-       });
+        if (teamMap[matchesJSON[match].red] === undefined) {
+          teamMap[matchesJSON[match].red] = 0;
+        }
+
+        if(teamMap[matchesJSON[match].blue] === undefined) {
+          teamMap[matchesJSON[match].blue] = 0;
+        }
     }
 
     teamTable.innerHTML = "";
 
-    const headTr = document.createElement("tr");
-    headTr.id = "team-header-row";
-
+    tr = document.createElement("tr");
     Object.keys(teamMap).forEach(key => {
-      const th = document.createElement("th");
-      th.id = "th-" + key;
+      th = document.createElement("th");
       th.innerHTML = key;
-      headTr.appendChild(th);
+      tr.appendChild(th);
     });
 
-    teamTable.appendChild(headTr);
+    teamTable.appendChild(tr);
 
-    const dataTr = document.createElement("tr");
-    dataTr.id = "team-data-row";
+    tr = document.createElement("tr");
 
     Object.keys(teamMap).forEach(key => {
-      const td = document.createElement("td");
+      td = document.createElement("td");
       td.id = key;
       td.innerHTML = "0";
-      dataTr.appendChild(td);
+      tr.appendChild(td);
     });
 
-    teamTable.appendChild(dataTr);
+    teamTable.appendChild(tr);
   }
 }
 
 function updateTeamScores() {
-  if (matchesJSON != null) {
+  if(matchesJSON != null) {
     Object.keys(teamMap).forEach(key => {
-      teamMap[key] = { score: 0, wins: 0, rank: 0 };
+      teamMap[key] = 0;
     });
 
-    const totalMatches = Object.keys(matchesJSON).join().match(/m\d+/g).length;
-
-    for (let i = 0; i < totalMatches; ++i) {
-      const match = "m" + (i + 1);
-
-      if (matchesJSON[match].rs == null || matchesJSON[match].bs == null) {
-        console.warn(`Skipping match ${match} due to missing scores.`);
-        continue;
+    totalMatches = Object.keys(matchesJSON).join().match(/m\d+/g).length;
+    for (i = 0; i < totalMatches; ++i) {
+      match = "m" + (i + 1);
+      if(matchesJSON[match].rs !== undefined) {
+        teamMap[matchesJSON[match].red] += matchesJSON[match].rs;
       }
 
-      [matchesJSON[match].red1, matchesJSON[match].red2].forEach(id => {
-        teamMap[getTeamName(id)].score += matchesJSON[match].rs;
-      });
-
-      [matchesJSON[match].blue1, matchesJSON[match].blue2].forEach(id => {
-        teamMap[getTeamName(id)].score += matchesJSON[match].bs;
-      });
-
-      if (matchesJSON[match].rs > matchesJSON[match].bs) {
-        [matchesJSON[match].red1, matchesJSON[match].red2].forEach(id => {
-          teamMap[getTeamName(id)].wins += 1;
-        });
-      } else if (matchesJSON[match].bs > matchesJSON[match].rs) {
-        [matchesJSON[match].blue1, matchesJSON[match].blue2].forEach(id => {
-          teamMap[getTeamName(id)].wins += 1;
-        });
+      if(matchesJSON[match].bs !== undefined) {
+        teamMap[matchesJSON[match].blue] += matchesJSON[match].bs;
       }
     }
 
-    const sortedTeams = Object.entries(teamMap)
-      .sort((a, b) => {
-        if (b[1].wins !== a[1].wins) return b[1].wins - a[1].wins;
-        return b[1].score - a[1].score;
-      }); 
-
-    sortedTeams.forEach(([teamName, data], index) => {
-      teamMap[teamName].rank = index + 1; 
-    });
-
-    // Record starting positions for animation
-    const oldXPositions = {};
-    sortedTeams.forEach(([teamName]) => {
-      const th = document.getElementById("th-" + teamName);
-      if (th) oldXPositions[teamName] = th.getBoundingClientRect().left;
-    });
-
     Object.keys(teamMap).forEach(key => {
-      const teamElement = document.getElementById(key);
-      if (teamElement) {
-        teamElement.innerHTML = `Rank: ${teamMap[key].rank} | Wins: ${teamMap[key].wins}`;
-      }
-    });
-
-    // Re-append cells to sort columns on screen
-    const headRow = document.getElementById("team-header-row");
-    const dataRow = document.getElementById("team-data-row");
-
-    if (headRow && dataRow) {
-      sortedTeams.forEach(([teamName]) => {
-        const th = document.getElementById("th-" + teamName);
-        const td = document.getElementById(teamName);
-        if (th) headRow.appendChild(th);
-        if (td) dataRow.appendChild(td);
-      });
-    }
-
-    sortedTeams.forEach(([teamName]) => {
-      const th = document.getElementById("th-" + teamName);
-      const td = document.getElementById(teamName);
-
-      if (th && td && oldXPositions[teamName] !== undefined) {
-        const newLeft = th.getBoundingClientRect().left;
-        const deltaX = oldXPositions[teamName] - newLeft;
-
-        if (deltaX !== 0) {
-          // 1. Shift elements back instantly to old positions
-          th.style.transition = "none";
-          td.style.transition = "none";
-          th.style.transform = `translateX(${deltaX}px)`;
-          td.style.transform = `translateX(${deltaX}px)`;
-
-          th.offsetHeight; // Force layout refresh
-
-          // 2. Delay the animation by 2 seconds (2000 ms)
-          setTimeout(() => {
-            th.style.transition = "transform 2.7s cubic-bezier(0.25, 1, 0.5, 1)";
-            td.style.transition = "transform 3.7s cubic-bezier(0.25, 1, 0.5, 1)";
-            th.style.transform = "translateX(0)";
-            td.style.transform = "translateX(0)";
-          }, 2000); // <-- Adjust delay time here in milliseconds (e.g., 1500 for 1.5s, 2000 for 2s)
-        }
-      }
+      document.getElementById(key).innerHTML = teamMap[key];
     });
   }
 }
+
 function createBracket() {
   if(matchesJSON != null) {
     if(confirm("Generating bracket will clear all other match data, do you wish to continue?")) {

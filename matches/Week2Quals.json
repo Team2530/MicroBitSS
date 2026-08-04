@@ -1,79 +1,53 @@
 {
    "preload": true,
-   "bracket": false,
+   "bracket": true,
    "icons" : {},
-   "teams": {
-      "Team 1": {
-         "name": "Team 1",
-         "icon": ""
-      },
-      "Team 2": {
-         "name": "Team 2",
-         "icon": ""
-      },
-      "Team 3": {
-         "name": "Team 3",
-         "icon": ""
-      },
-      "Team 4": {
-         "name": "Team 4",
-         "icon": ""
-      },
-      "Team 5": {
-         "name": "Team 5",
-         "icon": ""
-      },
-      "Team 6": {
-         "name": "Team 6",
-         "icon": ""
-      }
-   },
    "m1": {
-      "red1": 1,
-      "red2": 2,
-      "blue1": 3,
-      "blue2": 4
+      "red": "The Electric Bees + Ferrari Cheeseburgers",
+      "blue": "Team 1 + Team 2"
    },
    "m2": {
-      "red1": 5,
-      "red2": 6,
-      "blue1": 1,
-      "blue2": 2
+      "red": "Team 1 + Team 6",
+      "blue": "Team 3 + Team 5"
    },
    "m3": {
-      "red1": 3,
-      "red2": 4,
-      "blue1": 5,
-      "blue2": 6
+      "red": "Alliance 2",
+      "blue": "Alliance 7"
    },
    "m4": {
-      "red1": 1,
-      "red2": 3,
-      "blue1": 5,
-      "blue2": 2
+      "red": "Alliance 3",
+      "blue": "Alliance 6"
    },
    "m5": {
-      "red1": 4,
-      "red2": 6,
-      "blue1": 2,
-      "blue2": 3
+      "red": "Loser of m1",
+      "blue": "Loser of m2"
    },
    "m6": {
-      "red1": 5,
-      "red2": 1,
-      "blue1": 4,
-      "blue2": 6
+      "red": "Loser of m3",
+      "blue": "Loser of m4"
    },
    "m7": {
-      "red1": 2,
-      "red2": 3,
-      "blue1": 1,
-      "blue2": 5
+      "red": "Winner of m1",
+      "blue": "Winner of m2"
    },
    "m8": {
-      "red1": 6,
-      "red2": 4,
-      "blue1": 3,
-      "blue2": 2
+      "red": "Winner of m3",
+      "blue": "Winner of m4"
+   },
+   "m9": {
+      "red": "Loser of m7",
+      "blue": "Winner of m6"
+   },
+   "m10": {
+      "red": "Loser of m8",
+      "blue": "Winner of m5"
+   },
+   "m11": {
+      "red": "Winner of m7",
+      "blue": "Winner of m8"
+   },
+   "m12": {
+      "red": "Winner of m10",
+      "blue": "Winner of m9"
    }
 }

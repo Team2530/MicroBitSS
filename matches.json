@@ -1,0 +1,24 @@
+{
+    "preload": false,
+    "bracket": false,
+    "icons": {
+      "Alliance 1" : "kiwi.svg"
+    },
+
+    "m1": {
+      "red": "Alliance 1",
+      "blue": "Alliance 8"
+   },
+   "m2": {
+      "red": "Alliance 4",
+      "blue": "Alliance 5"
+   },
+   "m3": {
+      "red": "Alliance 2",
+      "blue": "Alliance 7"
+   },
+   "m4": {
+      "red": "Alliance 3",
+      "blue": "Alliance 6"
+   }
+}
