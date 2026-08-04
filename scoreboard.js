@@ -1,76 +1,109 @@
-let teamScores = [0, 0, 0, 0, 0, 0];
-let teamWins = [0, 0, 0, 0, 0, 0];
+
 const matchTableHeaders = `
-        <tr>
-            <th>Match</th>
-            <th>Red</th>
-            <th>Blue</th>
-            <th>Red Score</th>
-            <th>Blue Score</th>
-        </tr>`;
+  <tr>
+    <th>Match</th>
+    <th>Red Alliance</th>
+    <th>Blue Alliance</th>
+    <th>Red Score</th>
+    <th>Blue Score</th>
+  </tr>
+`;
 
-const matchTable = document.getElementById("match-table");
-const teamTable = document.getElementById("team-table");
-const scoreboard = document.getElementById("scoreboard");
-
-teamMap = {}
-
+var teamMap = {};
 
 document.addEventListener("keyup", (event) => {
-  if (event.key == "b" && matchesJSON != null && timerInterval == null && (timePassed == 0 || timePassed == initialTime)) {
+  if (event.key === "b" && matchesJSON != null && timerInterval == null && (timePassed === 0 || timePassed === initialTime)) {
+    const matchTable = document.getElementById("match-table");
+    if (matchTable && matchTable.children.length <= 1) {
+      createScoreboard();
+    } else {
+      updateTeamScores();
+    }
     toggleScoreboard();
-    updateTeamScores();
+    
   }
 });
 
 function toggleScoreboard() {
+  const scoreboard = document.getElementById("scoreboard");
+  if (scoreboard) {
     scoreboard.classList.toggle("hidden");
+  }
 }
 
 function createScoreboard() {
-  if (matchesJSON != null) {
+  const matchTable = document.getElementById("match-table");
+  const teamTable = document.getElementById("team-table");
+
+  if (matchesJSON != null && matchTable && teamTable) {
     matchTable.innerHTML = matchTableHeaders;
-    totalMatches = Object.keys(matchesJSON).join().match(/m\d+/g).length;
-    teamMap = {}
 
-    for (i = 0; i < totalMatches; ++i) {
-        match = "m" + (i + 1);
-        tr = document.createElement("tr");
-        tr.id = match;
-        tr.innerHTML = `
-                    <td>${i + 1}</td>
-                    <td>${getAllianceName(matchesJSON[match], "red")}</td>
-                    <td>${getAllianceName(matchesJSON[match], "blue")}</td>
-                    <td id="${match + "r"}">
-                    <div class="score-content">
-                      <span>---</span>
-                    </div>
-                    </td>
-                    <td id="${match + "b"}">
-                    <div class="score-content">
-                      <span>---</span>
-                    </div>
-                    </td> `;
-        matchTable.appendChild(tr);
+    const matchKeys = Object.keys(matchesJSON).filter((k) => /^m\d+$/.test(k));
+    const totalMatches = matchKeys.length;
+    teamMap = {};
 
-        [matchesJSON[match].red1,
-        matchesJSON[match].red2,
-        matchesJSON[match].blue1,
-        matchesJSON[match].blue2].forEach(id => {
-           const name = getTeamName(id);
-       
-           if (teamMap[name] === undefined) {
-               teamMap[name] = 0;
-           }
-       });
+    for (let i = 0; i < totalMatches; ++i) {
+      const match = "m" + (i + 1);
+      const currentMatch = matchesJSON[match];
+      if (!currentMatch) continue;
+
+      // Determine Alliance Names safely (Bracket string or Alliance teams)
+      let redName = "";
+      let blueName = "";
+
+      if (currentMatch.red !== undefined || currentMatch.blue !== undefined) {
+        redName = typeof findTeamName === "function" ? findTeamName(currentMatch.red) : currentMatch.red;
+        blueName = typeof findTeamName === "function" ? findTeamName(currentMatch.blue) : currentMatch.blue;
+      } else {
+        redName = getAllianceName(currentMatch, "red");
+        blueName = getAllianceName(currentMatch, "blue");
+      }
+
+      // Check for previously saved scores in JSON
+      const rs = currentMatch.rs !== undefined ? currentMatch.rs : "---";
+      const bs = currentMatch.bs !== undefined ? currentMatch.bs : "---";
+
+      const tr = document.createElement("tr");
+      tr.id = match;
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${redName}</td>
+        <td>${blueName}</td>
+        <td id="${match + "r"}">
+          <div class="score-content">
+            <span>${rs}</span>
+          </div>
+        </td>
+        <td id="${match + "b"}">
+          <div class="score-content">
+            <span>${bs}</span>
+          </div>
+        </td> `;
+      matchTable.appendChild(tr);
+
+      // Collect team IDs safely
+      [
+        currentMatch.red1,
+        currentMatch.red2,
+        currentMatch.blue1,
+        currentMatch.blue2,
+      ].forEach((id) => {
+        if (id !== undefined && id !== null) {
+          const name = getTeamName(id);
+          if (name && teamMap[name] === undefined) {
+            teamMap[name] = 0;
+          }
+        }
+      });
     }
 
+    // Build Team Rankings Table
     teamTable.innerHTML = "";
 
     const headTr = document.createElement("tr");
     headTr.id = "team-header-row";
 
-    Object.keys(teamMap).forEach(key => {
+    Object.keys(teamMap).forEach((key) => {
       const th = document.createElement("th");
       th.id = "th-" + key;
       th.innerHTML = key;
@@ -82,7 +115,7 @@ function createScoreboard() {
     const dataTr = document.createElement("tr");
     dataTr.id = "team-data-row";
 
-    Object.keys(teamMap).forEach(key => {
+    Object.keys(teamMap).forEach((key) => {
       const td = document.createElement("td");
       td.id = key;
       td.innerHTML = "0";
@@ -90,52 +123,74 @@ function createScoreboard() {
     });
 
     teamTable.appendChild(dataTr);
+
+    // Initial update to scores
+    updateTeamScores();
   }
 }
 
 function updateTeamScores() {
   if (matchesJSON != null) {
-    Object.keys(teamMap).forEach(key => {
+    Object.keys(teamMap).forEach((key) => {
       teamMap[key] = { score: 0, wins: 0, rank: 0 };
     });
 
-    const totalMatches = Object.keys(matchesJSON).join().match(/m\d+/g).length;
+    const matchKeys = Object.keys(matchesJSON).filter((k) => /^m\d+$/.test(k));
+    const totalMatches = matchKeys.length;
 
     for (let i = 0; i < totalMatches; ++i) {
       const match = "m" + (i + 1);
+      const currentMatch = matchesJSON[match];
 
-      if (matchesJSON[match].rs == null || matchesJSON[match].bs == null) {
-        console.warn(`Skipping match ${match} due to missing scores.`);
+      if (
+        !currentMatch ||
+        currentMatch.rs == null ||
+        currentMatch.bs == null
+      ) {
         continue;
       }
 
-      [matchesJSON[match].red1, matchesJSON[match].red2].forEach(id => {
-        teamMap[getTeamName(id)].score += matchesJSON[match].rs;
+      // Add Red team points
+      [currentMatch.red1, currentMatch.red2].forEach((id) => {
+        if (id !== undefined) {
+          const name = getTeamName(id);
+          if (teamMap[name]) teamMap[name].score += currentMatch.rs;
+        }
       });
 
-      [matchesJSON[match].blue1, matchesJSON[match].blue2].forEach(id => {
-        teamMap[getTeamName(id)].score += matchesJSON[match].bs;
+      // Add Blue team points
+      [currentMatch.blue1, currentMatch.blue2].forEach((id) => {
+        if (id !== undefined) {
+          const name = getTeamName(id);
+          if (teamMap[name]) teamMap[name].score += currentMatch.bs;
+        }
       });
 
-      if (matchesJSON[match].rs > matchesJSON[match].bs) {
-        [matchesJSON[match].red1, matchesJSON[match].red2].forEach(id => {
-          teamMap[getTeamName(id)].wins += 1;
+      // Win counter
+      if (currentMatch.rs > currentMatch.bs) {
+        [currentMatch.red1, currentMatch.red2].forEach((id) => {
+          if (id !== undefined) {
+            const name = getTeamName(id);
+            if (teamMap[name]) teamMap[name].wins += 1;
+          }
         });
-      } else if (matchesJSON[match].bs > matchesJSON[match].rs) {
-        [matchesJSON[match].blue1, matchesJSON[match].blue2].forEach(id => {
-          teamMap[getTeamName(id)].wins += 1;
+      } else if (currentMatch.bs > currentMatch.rs) {
+        [currentMatch.blue1, currentMatch.blue2].forEach((id) => {
+          if (id !== undefined) {
+            const name = getTeamName(id);
+            if (teamMap[name]) teamMap[name].wins += 1;
+          }
         });
       }
     }
 
-    const sortedTeams = Object.entries(teamMap)
-      .sort((a, b) => {
-        if (b[1].wins !== a[1].wins) return b[1].wins - a[1].wins;
-        return b[1].score - a[1].score;
-      }); 
+    const sortedTeams = Object.entries(teamMap).sort((a, b) => {
+      if (b[1].wins !== a[1].wins) return b[1].wins - a[1].wins;
+      return b[1].score - a[1].score;
+    });
 
     sortedTeams.forEach(([teamName, data], index) => {
-      teamMap[teamName].rank = index + 1; 
+      if (teamMap[teamName]) teamMap[teamName].rank = index + 1;
     });
 
     // Record starting positions for animation
@@ -145,9 +200,9 @@ function updateTeamScores() {
       if (th) oldXPositions[teamName] = th.getBoundingClientRect().left;
     });
 
-    Object.keys(teamMap).forEach(key => {
+    Object.keys(teamMap).forEach((key) => {
       const teamElement = document.getElementById(key);
-      if (teamElement) {
+      if (teamElement && teamMap[key]) {
         teamElement.innerHTML = `Rank: ${teamMap[key].rank} | Wins: ${teamMap[key].wins}`;
       }
     });
@@ -165,6 +220,7 @@ function updateTeamScores() {
       });
     }
 
+    // Run position animation
     sortedTeams.forEach(([teamName]) => {
       const th = document.getElementById("th-" + teamName);
       const td = document.getElementById(teamName);
@@ -174,58 +230,64 @@ function updateTeamScores() {
         const deltaX = oldXPositions[teamName] - newLeft;
 
         if (deltaX !== 0) {
-          // 1. Shift elements back instantly to old positions
           th.style.transition = "none";
           td.style.transition = "none";
           th.style.transform = `translateX(${deltaX}px)`;
           td.style.transform = `translateX(${deltaX}px)`;
 
-          th.offsetHeight; // Force layout refresh
+          void th.offsetHeight; // Force layout refresh
 
-          // 2. Delay the animation by 2 seconds (2000 ms)
           setTimeout(() => {
-            th.style.transition = "transform 2.7s cubic-bezier(0.25, 1, 0.5, 1)";
-            td.style.transition = "transform 3.7s cubic-bezier(0.25, 1, 0.5, 1)";
+            th.style.transition =
+              "transform 3.7s cubic-bezier(0.25, 1, 0.5, 1)";
+            td.style.transition =
+              "transform 3.7s cubic-bezier(0.25, 1, 0.5, 1)";
             th.style.transform = "translateX(0)";
             td.style.transform = "translateX(0)";
-          }, 2000); // <-- Adjust delay time here in milliseconds (e.g., 1500 for 1.5s, 2000 for 2s)
+          }, 8000);
         }
       }
     });
   }
 }
-function createBracket() {
-  if(matchesJSON != null) {
-    if(confirm("Generating bracket will clear all other match data, do you wish to continue?")) {
-      sortedTeams = Object.entries(teamMap).sort((a, b) => b[1] - a[1]);
 
+function createBracket() {
+  if (matchesJSON != null) {
+    if (confirm("Generating bracket will clear all other match data, do you wish to continue?")) {
+      const sortedTeams = Object.entries(teamMap).sort((a, b) => b[1].wins - a[1].wins || b[1].score - a[1].score);
+
+
+
+    if (sortedTeams.length >= 4) {
       matchesJSON = {
-        "m1": {
-          "red": sortedTeams[0][0],
-          "blue": sortedTeams[3][0]
+        bracket: true,
+        m1: {
+          red: sortedTeams[0][0],
+          blue: sortedTeams[3][0],
         },
-        "m2" : {
-          "red": sortedTeams[1][0],
-          "blue": sortedTeams[2][0]
+        m2: {
+          red: sortedTeams[1][0],
+          blue: sortedTeams[2][0],
         }, 
-        "m3" : {
-          "red" : "Winner of m1",
-          "blue": "Winner of m2"
+        m3: {
+          red: "Winner of m1",
+          blue: "Winner of m2",
         },
-        "m4" : {
-          "red": "Winner of m1",
-          "blue": "Winner of m2"
+        m4: {
+          red: "Winner of m1",
+          blue: "Winner of m2",
         },
-        "m5": {
-          "red": "Winner of m1",
-          "blue": "Winner of m2"
-        }
-      }
+        m5: {
+          red: "Winner of m1",
+          blue: "Winner of m2",
+        },
+      };
 
       resetTimer();
 
-      if(redReveal.classList.contains("red-reveal-enter")) {
-        toggleScores();
+      if (redReveal && redReveal.classList.contains("red-reveal-enter")
+      ) {
+      toggleScores();
       }
 
       matchNumber = 1;
@@ -233,7 +295,9 @@ function createBracket() {
       toggleScoreboard();
       createScoreboard();
 
-      document.getElementById("bottom-table").classList.add("hidden");
+      const bottomTable = document.getElementById("bottom-table");
+      if (bottomTable) bottomTable.classList.add("hidden");
+    }
     }
   }
 }
