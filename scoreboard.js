@@ -12,22 +12,43 @@ const matchTable = document.getElementById("match-table");
 const teamTable = document.getElementById("team-table");
 const scoreboard = document.getElementById("scoreboard");
 
-teamMap = {}
+const matchTableHeaders = `
+  <tr>
+    <th>Match</th>
+    <th>Red Alliance</th>
+    <th>Blue Alliance</th>
+    <th>Red Score</th>
+    <th>Blue Score</th>
+  </tr>
+`;
 
+var teamMap = {};
 
 document.addEventListener("keyup", (event) => {
-  if (event.key == "b" && matchesJSON != null && timerInterval == null && (timePassed == 0 || timePassed == initialTime)) {
+  if (event.key === "b" && matchesJSON != null && timerInterval == null && (timePassed === 0 || timePassed === initialTime)) {
+    const matchTable = document.getElementById("match-table");
+    if (matchTable && matchTable.children.length <= 1) {
+      createScoreboard();
+    } else {
+      updateTeamScores();
+    }
     toggleScoreboard();
-    updateTeamScores();
+    
   }
 });
 
 function toggleScoreboard() {
+  const scoreboard = document.getElementById("scoreboard");
+  if (scoreboard) {
     scoreboard.classList.toggle("hidden");
+  }
 }
 
 function createScoreboard() {
-  if (matchesJSON != null) {
+  const matchTable = document.getElementById("match-table");
+  const teamTable = document.getElementById("team-table");
+
+  if (matchesJSON != null && matchTable && teamTable) {
     matchTable.innerHTML = matchTableHeaders;
     totalMatches = Object.keys(matchesJSON).join().match(/m\d+/g).length;
     teamMap = {}
@@ -61,6 +82,7 @@ function createScoreboard() {
         }
     }
 
+    // Build Team Rankings Table
     teamTable.innerHTML = "";
 
     tr = document.createElement("tr");
@@ -110,37 +132,42 @@ function updateTeamScores() {
 }
 
 function createBracket() {
-  if(matchesJSON != null) {
-    if(confirm("Generating bracket will clear all other match data, do you wish to continue?")) {
-      sortedTeams = Object.entries(teamMap).sort((a, b) => b[1] - a[1]);
+  if (matchesJSON != null) {
+    if (confirm("Generating bracket will clear all other match data, do you wish to continue?")) {
+      const sortedTeams = Object.entries(teamMap).sort((a, b) => b[1].wins - a[1].wins || b[1].score - a[1].score);
 
+
+
+    if (sortedTeams.length >= 4) {
       matchesJSON = {
-        "m1": {
-          "red": sortedTeams[0][0],
-          "blue": sortedTeams[3][0]
+        bracket: true,
+        m1: {
+          red: sortedTeams[0][0],
+          blue: sortedTeams[3][0],
         },
-        "m2" : {
-          "red": sortedTeams[1][0],
-          "blue": sortedTeams[2][0]
+        m2: {
+          red: sortedTeams[1][0],
+          blue: sortedTeams[2][0],
         }, 
-        "m3" : {
-          "red" : "Winner of m1",
-          "blue": "Winner of m2"
+        m3: {
+          red: "Winner of m1",
+          blue: "Winner of m2",
         },
-        "m4" : {
-          "red": "Winner of m1",
-          "blue": "Winner of m2"
+        m4: {
+          red: "Winner of m1",
+          blue: "Winner of m2",
         },
-        "m5": {
-          "red": "Winner of m1",
-          "blue": "Winner of m2"
-        }
-      }
+        m5: {
+          red: "Winner of m1",
+          blue: "Winner of m2",
+        },
+      };
 
       resetTimer();
 
-      if(redReveal.classList.contains("red-reveal-enter")) {
-        toggleScores();
+      if (redReveal && redReveal.classList.contains("red-reveal-enter")
+      ) {
+      toggleScores();
       }
 
       matchNumber = 1;
@@ -148,7 +175,9 @@ function createBracket() {
       toggleScoreboard();
       createScoreboard();
 
-      document.getElementById("bottom-table").classList.add("hidden");
+      const bottomTable = document.getElementById("bottom-table");
+      if (bottomTable) bottomTable.classList.add("hidden");
+    }
     }
   }
 }

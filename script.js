@@ -22,7 +22,7 @@ teleop.preload = "auto";
 var initialTime = 140;
 
 // rankings
-const teams = []
+const teams = [];
 
 /**
  * Times for the "teleop" and "endgame" sounds to play,
@@ -33,7 +33,9 @@ const BUZZER_TIMES = {
   ENDGAME: 30,
 };
 
-timeDisplay.innerHTML = formatDisplayTime(initialTime);
+if (timeDisplay) {
+  timeDisplay.innerHTML = formatDisplayTime(initialTime);
+}
 
 var timePassed = 0;
 var timerInterval = null;
@@ -43,8 +45,8 @@ redTitle.innerHTML = "Red";
 var blueTitle = document.createElement("span");
 blueTitle.innerHTML = "Blue";
 
-redDisplay.appendChild(redTitle);
-blueDisplay.appendChild(blueTitle);
+if (redDisplay) redDisplay.appendChild(redTitle);
+if (blueDisplay) blueDisplay.appendChild(blueTitle);
 
 // Button keymap
 KEYMAP = [
@@ -73,7 +75,11 @@ window.onload = function () {
     .then((json) => {
       if (json.preload == true) {
         matchesJSON = json;
+        ensureTeamDefaults();
         loadMatch(matchNumber);
+        if (typeof createScoreboard === "function") {
+          createScoreboard();
+        }
       }
     });
 };
@@ -87,7 +93,9 @@ fileInput.onchange = function () {
       matchesJSON = JSON.parse(reader.result);
       matchNumber = 1;
       loadMatch(matchNumber);
+      if (typeof createScoreboard === "function") {
       createScoreboard();
+     } 
     } catch (error) {
       alert("Unable to parse file!");
     }
@@ -131,12 +139,9 @@ function formatDisplayTime(time) {
   return minutes + ":" + seconds;
 }
 
-function updateDisplayTime() {
-  timeDisplay.innerHTML = formatDisplayTime(timeRemaining);
-  --timeRemaining;
-}
-
 function startTimer() {
+  if (!timeDisplay) return;
+
   if (timePassed == 0) {
     start.play();
   }
@@ -174,13 +179,13 @@ function startTimer() {
         }
 
         if (initialTime - timePassed <= 10) {
-          displayCircle.classList = "circle-red";
+          if (displayCircle) displayCircle.classList = "circle-red";
           timeDisplay.classList.add("timer-end");
           void timeDisplay.offsetWidth;
         } else if (initialTime - timePassed <= 30) {
-          displayCircle.classList = "circle-orange";
+          if (displayCircle) displayCircle.classList = "circle-orange";
         } else {
-          displayCircle.classList = "circle-green";
+          if (displayCircle) displayCircle.classList = "circle-green";
         }
       }, 1000);
     }
@@ -190,6 +195,7 @@ function startTimer() {
 function stopTimer() {
   clearInterval(timerInterval);
   timerInterval = null;
+  if (!timeDisplay) return;
   if (!timeDisplay.classList.contains("timer-end")) {
     timeDisplay.classList = "timer-yellow";
   } else if (initialTime - timePassed <= 10 && timePassed != initialTime) {
@@ -203,13 +209,17 @@ function forceEnd() { // Force end used for debug and test purposes.
     timerInterval = null;
   }
   timePassed = initialTime; 
-  timeDisplay.innerHTML = formatDisplayTime(0); 
-  displayCircle.classList = "circle-red"; 
-  timeDisplay.classList.add("timer-end");
+  if (timeDisplay) {
+    timeDisplay.innerHTML = formatDisplayTime(0); 
+    timeDisplay.classList.add("timer-end");
+  }
+  if (displayCircle) displayCircle.classList = "circle-red"; 
+  
   end.play(); 
 }
 
 function changeCirclePercent() {
+  if (!displayCircle) return;
   var rawTimeFraction = 1 - timePassed / initialTime;
   circleDashArray = (rawTimeFraction * 629).toFixed(0) + " 628";
   displayCircle.setAttributeNS(null, "stroke-dasharray", circleDashArray);
@@ -238,34 +248,43 @@ function resetTimer() {
   );
 
   timePassed = 0;
-  displayCircle.setAttributeNS(null, "stroke-dasharray", "629 628");
-  timeDisplay.classList = "timer-white";
-  void timeDisplay.offsetWidth;
-  displayCircle.classList = "circle-green";
-  timeDisplay.innerHTML = formatDisplayTime(initialTime);
+  if (displayCircle) {
+    displayCircle.setAttributeNS(null, "stroke-dasharray", "629 628");
+    displayCircle.classList = "circle-green";
+  }
+  if (timeDisplay) {
+    timeDisplay.classList = "timer-white";
+    void timeDisplay.offsetWidth;
+    timeDisplay.innerHTML = formatDisplayTime(initialTime);
+  }
 }
 
 function updateScore(isBlue, score) {
   if (isBlue) {
+    if (blueDisplay) {
     blueDisplay.innerHTML = "";
     blueDisplay.appendChild(blueTitle);
     blueDisplay.innerHTML += score;
+    }
   } else {
+  if (redDisplay) {
     redDisplay.innerHTML = "";
     redDisplay.appendChild(redTitle);
     redDisplay.innerHTML += score;
+    }
   }
 }
 
 function updatePenalties(isBlue, penalties) {
-  if (isBlue) {
-    document.getElementById("blue-penalties").innerHTML = penalties;
-  } else {
-    document.getElementById("red-penalties").innerHTML = penalties;
-  }
+  const elem = document.getElementById(
+    isBlue ? "blue-penalties" : "red-penalties"
+  );
+  if (elem) elem.innerHTML = penalties;
 }
 
 function toggleTeams(resetScores, toggleIcons) {
+  if (!redDisplay || !blueDisplay) return;
+
   if (redDisplay.classList.contains("red-score-enter")) {
     blueDisplay.classList.remove("blue-score-enter");
     redDisplay.classList.remove("red-score-enter");
@@ -277,16 +296,16 @@ function toggleTeams(resetScores, toggleIcons) {
     blueDisplay.classList.add("blue-score-enter");
     redDisplay.classList.add("red-score-enter");
 
-    redIcon.classList.toggle("icon-toggle");
-    blueIcon.classList.toggle("icon-toggle");
+    if (redIcon) redIcon.classList.toggle("icon-toggle");
+    if (blueIcon) blueIcon.classList.toggle("icon-toggle");
   }
 
   if (toggleIcons) {
-    redIcon.classList.toggle("icon-toggle");
-    blueIcon.classList.toggle("icon-toggle");
+    if (redIcon) redIcon.classList.toggle("icon-toggle");
+    if (blueIcon) blueIcon.classList.toggle("icon-toggle");
 
-    void redIcon.offsetWidth;
-    void blueIcon.offsetWidth;
+    if (redIcon) void redIcon.offsetWidth;
+    if (blueIcon) void blueIcon.offsetWidth;
   }
 
   if (resetScores) {
@@ -308,13 +327,15 @@ function changeIcons() {
 }
 
 function toggleScores() {
+  if (!redReveal || !blueReveal) return;
+
   if (redReveal.classList.contains("red-reveal-enter")) {
     blueReveal.classList.remove("blue-reveal-enter");
     redReveal.classList.remove("red-reveal-enter");
     blueReveal.classList.add("blue-reveal-exit");
     redReveal.classList.add("red-reveal-exit");
 
-    if (redReveal.children[0].id == "tied") {
+    if (redReveal.children[0] && redReveal.children[0].id == "tied") {
       redReveal.removeChild(redReveal.firstChild);
     }
   } else {
@@ -361,7 +382,7 @@ function toggleScores() {
       }
     }
 
-    if (matchesJSON != null) {
+    if (matchesJSON != null && matchesJSON["m" + matchNumber]) {
       matchesJSON["m" + matchNumber].winner = winner;
       matchesJSON["m" + matchNumber].rs = points[0] + penalties[1];
       matchesJSON["m" + matchNumber].bs = points[1] + penalties[0];
@@ -385,7 +406,6 @@ function toggleScores() {
             <img src="./svg/winner.svg">
           </div>`;
       }
-    }
 
     blueReveal.classList.remove("blue-reveal-exit");
     redReveal.classList.remove("red-reveal-exit");
@@ -395,9 +415,10 @@ function toggleScores() {
 }
 
 function loadMatch(number) {
-  document
-    .getElementById("match-selector")
-    .classList.replace("no-matches", "matches");
+const matchSelector = document.getElementById("match-selector");
+  if (matchSelector) {
+    matchSelector.classList.replace("no-matches", "matches");
+  }
 
   matchNumber = Math.max(
     Math.min(Object.keys(matchesJSON).join().match(/m/g).length, number),
@@ -412,17 +433,18 @@ function loadMatch(number) {
     document.getElementById("red-reveal-name").innerHTML = matchData.red;
     document.getElementById("blue-reveal-name").innerHTML = matchData.blue;
   } else {
-    red = findTeamName(matchesJSON["m" + matchNumber].red);
-    blue = findTeamName(matchesJSON["m" + matchNumber].blue);
+    const redAlliance = getAllianceName(currentMatch, "red");
+    const blueAlliance = getAllianceName(currentMatch, "blue");
 
-    redTitle.innerHTML = red;
-    blueTitle.innerHTML = blue;
+    redTitle.innerHTML = redAlliance;
+    blueTitle.innerHTML = blueAlliance;
 
-    document.getElementById("red-reveal-name").innerHTML = red;
-    document.getElementById("blue-reveal-name").innerHTML = blue;
+    if (redRevealName) redRevealName.innerHTML = redAlliance;
+    if (blueRevealName) blueRevealName.innerHTML = blueAlliance;
   }
 
-  document.getElementById("match").innerHTML = "Match " + matchNumber;
+  const matchElem = document.getElementById("match");
+  if (matchElem) matchElem.innerHTML = "Match " + matchNumber;
 
   if (number == matchNumber) {
     toggleTeams(false, true);
@@ -436,19 +458,22 @@ function loadMatch(number) {
 
 function findTeamName(info) {
   if (info.toUpperCase().match(/(WINNER|LOSER) OF M\d+/g)) {
-    match = matchesJSON[info.match(/m\d+/)];
     // Find team based on what the info says, if winner then use the
     // .winner property, else get the opposite team
+    const matchKey = info.match(/m\d+/i)[0];
+    const targetMatch = matchesJSON[matchKey];
+    if (!targetMatch) return info;
+
     return findTeamName(
-      match[
-        info.includes("Winner")
-          ? match.winner
-          : match.winner == "red"
+      targetMatch[
+        info.toLowerCase().includes("winner")
+          ? targetMatch.winner
+          : targetMatch.winner == "red"
           ? "blue"
           : "red"
       ]
     );
   } else {
-    return info;
+    return getTeamName(info);
   }
-}
+}//
