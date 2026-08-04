@@ -384,7 +384,7 @@ function toggleScores() {
           </div>`;
         document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${finalPoints.blue}</span>`;
       } else {
-        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${inalPoints.red}</span>`;
+        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${finalPoints.red}</span>`;
         document.getElementById("m" + matchNumber + "b").innerHTML = `
         <div class="score-content">
             <span>${finalPoints.blue}</span>
