@@ -68,14 +68,22 @@
       </svg>
       <div class="button-row">
         <button
+          title="Start Timer (S)"
           style="background-image: url(./svg/play.svg)"
           onclick="startTimer()"
         ></button>
         <button
+          title="Pause Timer (P)"
+          style="background-image: url(./svg/pause.svg)"
+          onclick="stopTimer()"
+        ></button>
+        <button
+          title="Reset Timer (Loads next match)"
           style="background-image: url(./svg/restart.svg)"
           onclick="resetTimer()"
         ></button>
         <button
+          title="Load Matches (Json File)"
           style="background-image: url(./svg/upload.svg)"
           onclick="document.getElementById('file-input').click()"
         ></button>
