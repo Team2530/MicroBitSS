@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FRC Timer</title>
-    <link defer rel="stylesheet" href="style.css" />
-    <script defer src="script.js"></script>
+    <link rel="stylesheet" href="style.css" />
     <script defer src="scoreboard.js"></script>
+    <script defer src="script.js"></script>
   </head>
   <body style="background-color: #3b3a3a">
     <img id="red-icon" class="team-icon" src="team-icons/default-red.svg" />
@@ -23,9 +23,10 @@
       <span id="match">Match 1</span>
       <button
         style="background-image: url(./svg/right.svg)"
-        onclick=" if(timePassed == 0) loadMatch(++matchNumber)"
+        onclick="if(timePassed == 0) loadMatch(++matchNumber)"
       ></button>
     </div>
+
     <div
       id="timer-div"
       class="base-timer"
@@ -99,7 +100,7 @@
         ></button>
       </div>
     </div>
-    </div>
+    
     <div id="blue-reveal" class="reveal blue-reveal-exit">
       <div class="reveal-score">
         <div id="blue-reveal-name">Blue</div>
@@ -107,6 +108,7 @@
         <div id="blue-reveal-penalties" class="penalties">100</div>
       </div>
     </div>
+
     <div id="red-reveal" class="reveal red-reveal-exit">
       <div class="reveal-score">
         <div id="red-reveal-name">Red</div>
@@ -116,19 +118,19 @@
     </div>
 
     <input id="file-input" type="file" style="display: none" accept=".json" />
+
     <div id="scoreboard" class="scoreboard hidden">
       <div class="top-table">
         <div class="scroll-wrapper">
           <table id="match-table"></table>
         </div>
       </div>
-      
 
       <div id="bottom-table" class="bottom-table">
-        <table id="team-table">
-        </table>
+        <table id="team-table"></table>
       </div>
       <img class="tournament" src="./svg/tournament.svg" alt="" onclick="createBracket()">
     </div>
   </body>
+  
 </html>

@@ -22,7 +22,7 @@ teleop.preload = "auto";
 var initialTime = 140;
 
 // rankings
-const teams = []
+const teams = [];
 
 /**
  * Times for the "teleop" and "endgame" sounds to play,
@@ -33,7 +33,9 @@ const BUZZER_TIMES = {
   ENDGAME: 30,
 };
 
-timeDisplay.innerHTML = formatDisplayTime(initialTime);
+if (timeDisplay) {
+  timeDisplay.innerHTML = formatDisplayTime(initialTime);
+}
 
 var timePassed = 0;
 var timerInterval = null;
@@ -43,8 +45,8 @@ redTitle.innerHTML = "Red";
 var blueTitle = document.createElement("span");
 blueTitle.innerHTML = "Blue";
 
-redDisplay.appendChild(redTitle);
-blueDisplay.appendChild(blueTitle);
+if (redDisplay) redDisplay.appendChild(redTitle);
+if (blueDisplay) blueDisplay.appendChild(blueTitle);
 
 var matchesJSON = null;
 var matchNumber = 1;
@@ -55,14 +57,14 @@ var penalties = {red:0, blue:0};
 const resetAllPoints = () => {points = {red:0, blue:0};penalties = {red:0, blue:0};}
 
 const KEYMAP = [
-  ["s","red", 1],
-  ["s","red", -1],
-  ["s","blue", 1],
-  ["s","blue", -1],
-  ["p","red", 1],
-  ["p","red", -1],
-  ["p","blue", 1],
-  ["p","blue", -1],
+  ["s", "red", 1],
+  ["s", "red", -1],
+  ["s", "blue", 1],
+  ["s", "blue", -1],
+  ["p", "red", 1],
+  ["p", "red", -1],
+  ["p", "blue", 1],
+  ["p", "blue", -1],
 ];
 
 // load matches.json (the default example) if "preload" is set to true
@@ -73,32 +75,51 @@ window.onload = function () {
     .then((json) => {
       if (json.preload == true) {
         matchesJSON = json;
+        ensureTeamDefaults();
         loadMatch(matchNumber);
+        if (typeof createScoreboard === "function") {
+          createScoreboard();
+        }
       }
     });
 };
 
-fileInput.onchange = function () {
-  var reader = new FileReader(); // Fixed missing 'var/const' syntax here
+if (fileInput) {
+  fileInput.onchange = function () {
+  var reader = new FileReader(); 
   reader.readAsText(fileInput.files[0]);
 
   reader.onload = function () {
     try {
       matchesJSON = JSON.parse(reader.result);
-      if (!matchesJSON.customTeams) {
-        matchesJSON.customTeams = ["", "", "", "", "", ""];
-      }
-
+      ensureTeamDefaults();
       console.log("JSON successfully loaded into global variable matchesJSON:", matchesJSON);
       matchNumber = 1;
       loadMatch(matchNumber);
+      if (typeof createScoreboard === "function") {
       createScoreboard();
+     } 
     } catch (error) {
-      console.error(error);
-      alert(error.message);
-    }
+       console.error(error);
+       alert(error.message);
+      }
+    };
   };
-};
+}
+
+function ensureTeamDefaults() {
+  if (!matchesJSON) return;
+  if (!matchesJSON.teams) matchesJSON.teams = {};
+
+  for (let i = 1; i <= 6; i++) {
+    const key = `Team ${i}`;
+    if (!matchesJSON.teams[key]) {
+      matchesJSON.teams[key] = { name: key };
+    }
+  }
+}
+
+
 document.addEventListener("keyup", (event) => {
   if (event.key == "r" && timePassed == initialTime) {
     toggleScores();
@@ -110,7 +131,6 @@ document.addEventListener("keyup", (event) => {
     forceEnd();
   } else if ("12345678".includes(event.key) && timePassed != 0) {
     const action = KEYMAP[parseInt(event.key) - 1];
-    console.log(`${event.key}: ${action}`);
     if (action[0] == "s") {
       points[action[1]] = Math.max(0, points[action[1]] + action[2]);
     } else {
@@ -136,12 +156,9 @@ function formatDisplayTime(time) {
   return minutes + ":" + seconds;
 }
 
-function updateDisplayTime() {
-  timeDisplay.innerHTML = formatDisplayTime(timeRemaining);
-  --timeRemaining;
-}
-
 function startTimer() {
+  if (!timeDisplay) return;
+
   if (timePassed == 0) {
     start.play();
   }
@@ -179,13 +196,13 @@ function startTimer() {
         }
 
         if (initialTime - timePassed <= 10) {
-          displayCircle.classList = "circle-red";
+          if (displayCircle) displayCircle.classList = "circle-red";
           timeDisplay.classList.add("timer-end");
           void timeDisplay.offsetWidth;
         } else if (initialTime - timePassed <= 30) {
-          displayCircle.classList = "circle-orange";
+          if (displayCircle) displayCircle.classList = "circle-orange";
         } else {
-          displayCircle.classList = "circle-green";
+          if (displayCircle) displayCircle.classList = "circle-green";
         }
       }, 1000);
     }
@@ -195,6 +212,7 @@ function startTimer() {
 function stopTimer() {
   clearInterval(timerInterval);
   timerInterval = null;
+  if (!timeDisplay) return;
   if (!timeDisplay.classList.contains("timer-end")) {
     timeDisplay.classList = "timer-yellow";
   } else if (initialTime - timePassed <= 10 && timePassed != initialTime) {
@@ -205,7 +223,7 @@ function stopTimer() {
 function settings() {
   const url = "settings.html";
   const windowName = "MBSS-config";
-  const windowFeatures = "width=500,height=600,resizable=yes,scrollbars=yes" 
+  const windowFeatures = "width=500,height=600,resizable=yes,scrollbars=yes"; 
 
   window.open(url, windowName, windowFeatures);
 }
@@ -216,13 +234,17 @@ function forceEnd() { // Force end used for debug and test purposes.
     timerInterval = null;
   }
   timePassed = initialTime; 
-  timeDisplay.innerHTML = formatDisplayTime(0); 
-  displayCircle.classList = "circle-red"; 
-  timeDisplay.classList.add("timer-end");
+  if (timeDisplay) {
+    timeDisplay.innerHTML = formatDisplayTime(0); 
+    timeDisplay.classList.add("timer-end");
+  }
+  if (displayCircle) displayCircle.classList = "circle-red"; 
+  
   end.play(); 
 }
 
 function changeCirclePercent() {
+  if (!displayCircle) return;
   var rawTimeFraction = 1 - timePassed / initialTime;
   circleDashArray = (rawTimeFraction * 629).toFixed(0) + " 628";
   displayCircle.setAttributeNS(null, "stroke-dasharray", circleDashArray);
@@ -250,34 +272,43 @@ function resetTimer() {
   );
 
   timePassed = 0;
-  displayCircle.setAttributeNS(null, "stroke-dasharray", "629 628");
-  timeDisplay.classList = "timer-white";
-  void timeDisplay.offsetWidth;
-  displayCircle.classList = "circle-green";
-  timeDisplay.innerHTML = formatDisplayTime(initialTime);
+  if (displayCircle) {
+    displayCircle.setAttributeNS(null, "stroke-dasharray", "629 628");
+    displayCircle.classList = "circle-green";
+  }
+  if (timeDisplay) {
+    timeDisplay.classList = "timer-white";
+    void timeDisplay.offsetWidth;
+    timeDisplay.innerHTML = formatDisplayTime(initialTime);
+  }
 }
 
 function updateScore(isBlue, score) {
   if (isBlue) {
+    if (blueDisplay) {
     blueDisplay.innerHTML = "";
     blueDisplay.appendChild(blueTitle);
     blueDisplay.innerHTML += score;
+    }
   } else {
+  if (redDisplay) {
     redDisplay.innerHTML = "";
     redDisplay.appendChild(redTitle);
     redDisplay.innerHTML += score;
+    }
   }
 }
 
 function updatePenalties(isBlue, penalties) {
-  if (isBlue) {
-    document.getElementById("blue-penalties").innerHTML = penalties;
-  } else {
-    document.getElementById("red-penalties").innerHTML = penalties;
-  }
+  const elem = document.getElementById(
+    isBlue ? "blue-penalties" : "red-penalties"
+  );
+  if (elem) elem.innerHTML = penalties;
 }
 
 function toggleTeams(resetScores, toggleIcons) {
+  if (!redDisplay || !blueDisplay) return;
+
   if (redDisplay.classList.contains("red-score-enter")) {
     blueDisplay.classList.remove("blue-score-enter");
     redDisplay.classList.remove("red-score-enter");
@@ -289,16 +320,16 @@ function toggleTeams(resetScores, toggleIcons) {
     blueDisplay.classList.add("blue-score-enter");
     redDisplay.classList.add("red-score-enter");
 
-    redIcon.classList.toggle("icon-toggle");
-    blueIcon.classList.toggle("icon-toggle");
+    if (redIcon) redIcon.classList.toggle("icon-toggle");
+    if (blueIcon) blueIcon.classList.toggle("icon-toggle");
   }
 
   if (toggleIcons) {
-    redIcon.classList.toggle("icon-toggle");
-    blueIcon.classList.toggle("icon-toggle");
+    if (redIcon) redIcon.classList.toggle("icon-toggle");
+    if (blueIcon) blueIcon.classList.toggle("icon-toggle");
 
-    void redIcon.offsetWidth;
-    void blueIcon.offsetWidth;
+    if (redIcon) void redIcon.offsetWidth;
+    if (blueIcon) void blueIcon.offsetWidth;
   }
 
   if (resetScores) {
@@ -308,30 +339,36 @@ function toggleTeams(resetScores, toggleIcons) {
 }
 
 function changeIcons() {
-  redIcon.src = "./team-icons/default-red.svg";
-  blueIcon.src = "./team-icons/default-blue.svg";
+  if (redIcon) redIcon.src = "./team-icons/default-red.svg";
+  if (blueIcon) blueIcon.src = "./team-icons/default-blue.svg";
 }
 
 function toggleScores() {
+  if (!redReveal || !blueReveal) return;
+
   if (redReveal.classList.contains("red-reveal-enter")) {
     blueReveal.classList.remove("blue-reveal-enter");
     redReveal.classList.remove("red-reveal-enter");
     blueReveal.classList.add("blue-reveal-exit");
     redReveal.classList.add("red-reveal-exit");
 
-    if (redReveal.children[0].id == "tied") {
+    if (redReveal.children[0] && redReveal.children[0].id == "tied") {
       redReveal.removeChild(redReveal.firstChild);
     }
   } else {
     // update scores in reveal divs
-    document.getElementById("red-reveal-points").innerHTML =
-      points.red + penalties.blue;
-    document.getElementById("red-reveal-penalties").innerHTML = penalties.red;
-    document.getElementById("blue-reveal-points").innerHTML =
-      points.blue + penalties.red;
-    document.getElementById("blue-reveal-penalties").innerHTML = penalties.blue;
+        const redPtsElem = document.getElementById("red-reveal-points");
+    const redPenElem = document.getElementById("red-reveal-penalties");
+    const bluePtsElem = document.getElementById("blue-reveal-points");
+    const bluePenElem = document.getElementById("blue-reveal-penalties");
 
-    winnerDiv = document.createElement("div");
+    if (redPtsElem) redPtsElem.innerHTML = points.red + penalties.blue;
+    if (redPenElem) redPenElem.innerHTML = penalties.red;
+    if (bluePtsElem) bluePtsElem.innerHTML = points.blue + penalties.red;
+    if (bluePenElem) bluePenElem.innerHTML = penalties.blue;
+
+    const winnerDiv = document.createElement("div");
+
     winnerDiv.id = "winner";
     winnerDiv.innerHTML = "Winner!";
 
@@ -353,7 +390,7 @@ function toggleScores() {
     } else if (finalPoints.red < finalPoints.blue) {
       blueReveal.insertBefore(winnerDiv, blueReveal.firstChild);
       winner = "blue";
-    } else if (finalPoints.red == finalPoints.blue) {
+    } else {
       if (penalties.red < penalties.blue) {
         redReveal.insertBefore(winnerDiv, redReveal.firstChild);
         winner = "red";
@@ -367,31 +404,38 @@ function toggleScores() {
       }
     }
 
-    if (matchesJSON != null) {
+    if (matchesJSON != null && matchesJSON["m" + matchNumber]) {
       matchesJSON["m" + matchNumber].winner = winner;
       matchesJSON["m" + matchNumber].rs = finalPoints.red;
       matchesJSON["m" + matchNumber].bs = finalPoints.blue;
 
-      // also update bracket/scoreboard
-      if(winner == "") {
-        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${finalPoints.red}</span>`;
-        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${finalPoints.blue}</span>`;
-      } else if(winner == "red") {
-        document.getElementById("m" + matchNumber + "r").innerHTML = 
-        `<div class="score-content">
-            <span>${finalPoints.red}</span>
-            <img src="./svg/winner.svg">
-          </div>`;
-        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${finalPoints.blue}</span>`;
-      } else {
-        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${inalPoints.red}</span>`;
-        document.getElementById("m" + matchNumber + "b").innerHTML = `
-        <div class="score-content">
-            <span>${finalPoints.blue}</span>
-            <img src="./svg/winner.svg">
-          </div>`;
+      const redMatchCell = document.getElementById("m" + matchNumber + "r");
+      const blueMatchCell = document.getElementById("m" + matchNumber + "b");
+
+      // Fixed typo: 'inalPoints.red' -> 'finalPoints.red'
+      if (redMatchCell && blueMatchCell) {
+        if (winner == "") {
+          redMatchCell.innerHTML = `<span>${finalPoints.red}</span>`;
+          blueMatchCell.innerHTML = `<span>${finalPoints.blue}</span>`;
+        } else if (winner == "red") {
+          redMatchCell.innerHTML = `<div class="score-content">
+              <span>${finalPoints.red}</span>
+              <img src="./svg/winner.svg">
+            </div>`;
+          blueMatchCell.innerHTML = `<span>${finalPoints.blue}</span>`;
+        } else {
+          redMatchCell.innerHTML = `<span>${finalPoints.red}</span>`;
+          blueMatchCell.innerHTML = `<div class="score-content">
+              <span>${finalPoints.blue}</span>
+              <img src="./svg/winner.svg">
+            </div>`;
+       }
       }
-    }
+
+      if (typeof updateTeamScores === "function") {
+        updateTeamScores();
+        }
+      }
 
     blueReveal.classList.remove("blue-reveal-exit");
     redReveal.classList.remove("red-reveal-exit");
@@ -401,58 +445,70 @@ function toggleScores() {
 }
 
 function getTeamName(id) {
-  if (id == null) return "";
-
-  // already a string like "Winner of m1"
+  if (id == null) return "Team Default";
   if (typeof id === "string") return id;
 
-  return matchesJSON.teams["Team " + id]?.name ?? ("Team " + id);
+  const teamKey = "Team " + id;
+  if (
+    matchesJSON &&
+    matchesJSON.teams &&
+    matchesJSON.teams[teamKey] &&
+    matchesJSON.teams[teamKey].name &&
+    matchesJSON.teams[teamKey].name.trim() !== ""
+  ) {
+    return matchesJSON.teams[teamKey].name;
+  }
+
+  return "Team " + id;
 }
 
 function getAllianceName(match, color) {
+  if (!match) return "";
   const t1 = getTeamName(match[color + "1"]);
   const t2 = getTeamName(match[color + "2"]);
   return `${t1} & ${t2}`;
 }
 
-
 function loadMatch(number) {
-  document
-    .getElementById("match-selector")
-    .classList.replace("no-matches", "matches");
-
-  const totalMatches = Object.keys(matchesJSON)
-    .filter(k => /^m\d+$/.test(k))
-    .length;
-
-  matchNumber = Math.max(
-    Math.min(totalMatches, number),
-    1
-  );
-
-  if (matchesJSON.bracket == false) {
-    const matchData = matchesJSON["m" + matchNumber];
-
-    const redAlliance = getAllianceName(matchData, "red");
-    const blueAlliance = getAllianceName(matchData, "blue");
-    
-    redTitle.innerHTML = redAlliance;
-    blueTitle.innerHTML = blueAlliance;
-    
-    document.getElementById("red-reveal-name").innerHTML = redAlliance;
-    document.getElementById("blue-reveal-name").innerHTML = blueAlliance;
-  } else {
-    red = findTeamName(matchesJSON["m" + matchNumber].red);
-    blue = findTeamName(matchesJSON["m" + matchNumber].blue);
-
-    redTitle.innerHTML = red;
-    blueTitle.innerHTML = blue;
-
-    document.getElementById("red-reveal-name").innerHTML = red;
-    document.getElementById("blue-reveal-name").innerHTML = blue;
+const matchSelector = document.getElementById("match-selector");
+  if (matchSelector) {
+    matchSelector.classList.replace("no-matches", "matches");
   }
 
-  document.getElementById("match").innerHTML = "Match " + matchNumber;
+  if (!matchesJSON) return;
+
+  const totalMatches = Object.keys(matchesJSON).filter((k) => /^m\d+$/.test(k)).length;
+  matchNumber = Math.max(Math.min(totalMatches, number), 1);
+
+  const currentMatch = matchesJSON["m" + matchNumber];
+  if (!currentMatch) return;
+
+    const redRevealName = document.getElementById("red-reveal-name");
+    const blueRevealName = document.getElementById("blue-reveal-name");
+
+    if (matchesJSON.bracket === true || currentMatch.red !== undefined) {
+      const red = findTeamName(currentMatch.red);
+      const blue = findTeamName(currentMatch.blue);
+
+
+      redTitle.innerHTML = red;
+      blueTitle.innerHTML = blue;
+
+      if (redRevealName) redRevealName.innerHTML = red;
+    if (blueRevealName) blueRevealName.innerHTML = blue;
+  } else {
+    const redAlliance = getAllianceName(currentMatch, "red");
+    const blueAlliance = getAllianceName(currentMatch, "blue");
+
+    redTitle.innerHTML = redAlliance;
+    blueTitle.innerHTML = blueAlliance;
+
+    if (redRevealName) redRevealName.innerHTML = redAlliance;
+    if (blueRevealName) blueRevealName.innerHTML = blueAlliance;
+  }
+
+  const matchElem = document.getElementById("match");
+  if (matchElem) matchElem.innerHTML = "Match " + matchNumber;
 
   if (number == matchNumber) {
     toggleTeams(false, true);
@@ -469,19 +525,22 @@ function findTeamName(info) {
     return "";
   }
   if (info.toUpperCase().match(/(WINNER|LOSER) OF M\d+/g)) {
-    match = matchesJSON[info.match(/m\d+/)];
     // Find team based on what the info says, if winner then use the
     // .winner property, else get the opposite team
+    const matchKey = info.match(/m\d+/i)[0];
+    const targetMatch = matchesJSON[matchKey];
+    if (!targetMatch) return info;
+
     return findTeamName(
-      match[
-        info.includes("Winner")
-          ? match.winner
-          : match.winner == "red"
+      targetMatch[
+        info.toLowerCase().includes("winner")
+          ? targetMatch.winner
+          : targetMatch.winner == "red"
           ? "blue"
           : "red"
       ]
     );
   } else {
-    return info;
+    return getTeamName(info);
   }
-}
+}//
