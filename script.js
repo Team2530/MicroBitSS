@@ -46,24 +46,24 @@ blueTitle.innerHTML = "Blue";
 redDisplay.appendChild(redTitle);
 blueDisplay.appendChild(blueTitle);
 
-// Button keymap
-KEYMAP = [
-  ["s", 0, 1],
-  ["s", 0, -1],
-  ["s", 1, 1],
-  ["s", 1, -1],
-  ["p", 0, 1],
-  ["p", 0, -1],
-  ["p", 1, 1],
-  ["p", 1, -1],
-];
-
 var matchesJSON = null;
 var matchNumber = 1;
 
 // Red, blue
-var points = [0, 0];
-var penalties = [0, 0];
+var points = {red:0, blue:0};
+var penalties = {red:0, blue:0};
+const resetAllPoints = () => {points = {red:0, blue:0};penalties = {red:0, blue:0};}
+
+const KEYMAP = [
+  ["s","red", 1],
+  ["s","red", -1],
+  ["s","blue", 1],
+  ["s","blue", -1],
+  ["p","red", 1],
+  ["p","red", -1],
+  ["p","blue", 1],
+  ["p","blue", -1],
+];
 
 // load matches.json (the default example) if "preload" is set to true
 window.onload = function () {
@@ -99,8 +99,6 @@ fileInput.onchange = function () {
     }
   };
 };
-
-
 document.addEventListener("keyup", (event) => {
   if (event.key == "r" && timePassed == initialTime) {
     toggleScores();
@@ -111,7 +109,7 @@ document.addEventListener("keyup", (event) => {
   } else if (event.key == "e" && timePassed != 0) {
     forceEnd();
   } else if ("12345678".includes(event.key) && timePassed != 0) {
-    let action = KEYMAP[parseInt(event.key) - 1];
+    const action = KEYMAP[parseInt(event.key) - 1];
     console.log(`${event.key}: ${action}`);
     if (action[0] == "s") {
       points[action[1]] = Math.max(0, points[action[1]] + action[2]);
@@ -119,11 +117,11 @@ document.addEventListener("keyup", (event) => {
       penalties[action[1]] = Math.max(0, penalties[action[1]] + action[2]);
     }
 
-    updateScore(false, points[0]);
-    updateScore(true, points[1]);
+    updateScore(false, points.red);
+    updateScore(true, points.blue);
 
-    updatePenalties(false, penalties[0]);
-    updatePenalties(true, penalties[1]);
+    updatePenalties(false, penalties.red);
+    updatePenalties(true, penalties.blue);
   }
 });
 
@@ -238,8 +236,7 @@ function resetTimer() {
     loadMatch(++matchNumber);
   }
 
-  points = [0, 0];
-  penalties = [0, 0];
+  resetAllPoints();
 
   setTimeout(
     () => {
@@ -328,11 +325,11 @@ function toggleScores() {
   } else {
     // update scores in reveal divs
     document.getElementById("red-reveal-points").innerHTML =
-      points[0] + penalties[1];
-    document.getElementById("red-reveal-penalties").innerHTML = penalties[0];
+      points.red + penalties.blue;
+    document.getElementById("red-reveal-penalties").innerHTML = penalties.red;
     document.getElementById("blue-reveal-points").innerHTML =
-      points[1] + penalties[0];
-    document.getElementById("blue-reveal-penalties").innerHTML = penalties[1];
+      points.blue + penalties.red;
+    document.getElementById("blue-reveal-penalties").innerHTML = penalties.blue;
 
     winnerDiv = document.createElement("div");
     winnerDiv.id = "winner";
@@ -346,20 +343,21 @@ function toggleScores() {
       blueReveal.removeChild(blueReveal.firstChild);
     }
 
-    winner = "";
+    var winner = "";
+    const finalPoints = {red:points.red + penalties.blue,blue:points.blue + penalties.red};
 
     // Winner logic
-    if (points[0] - penalties[0] > points[1] - penalties[1]) {
+    if (finalPoints.red > finalPoints.blue) {
       redReveal.insertBefore(winnerDiv, redReveal.firstChild);
       winner = "red";
-    } else if (points[0] - penalties[0] < points[1] - penalties[1]) {
+    } else if (finalPoints.red < finalPoints.blue) {
       blueReveal.insertBefore(winnerDiv, blueReveal.firstChild);
       winner = "blue";
-    } else if (points[0] - penalties[0] == points[1] - penalties[1]) {
-      if (penalties[0] < penalties[1]) {
+    } else if (finalPoints.red == finalPoints.blue) {
+      if (penalties.red < penalties.blue) {
         redReveal.insertBefore(winnerDiv, redReveal.firstChild);
         winner = "red";
-      } else if (penalties[0] > penalties[1]) {
+      } else if (penalties.red > penalties.blue) {
         blueReveal.insertBefore(winnerDiv, blueReveal.firstChild);
         winner = "blue";
       } else {
@@ -371,25 +369,25 @@ function toggleScores() {
 
     if (matchesJSON != null) {
       matchesJSON["m" + matchNumber].winner = winner;
-      matchesJSON["m" + matchNumber].rs = points[0] + penalties[1];
-      matchesJSON["m" + matchNumber].bs = points[1] + penalties[0];
+      matchesJSON["m" + matchNumber].rs = finalPoints.red;
+      matchesJSON["m" + matchNumber].bs = finalPoints.blue;
 
       // also update bracket/scoreboard
       if(winner == "") {
-        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${points[0] + penalties[1]}</span>`;
-        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${points[1] + penalties[0]}</span>`;
+        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${finalPoints.red}</span>`;
+        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${finalPoints.blue}</span>`;
       } else if(winner == "red") {
         document.getElementById("m" + matchNumber + "r").innerHTML = 
         `<div class="score-content">
-            <span>${points[0] + penalties[1]}</span>
+            <span>${finalPoints.red}</span>
             <img src="./svg/winner.svg">
           </div>`;
-        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${points[1] + penalties[0]}</span>`;
+        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${finalPoints.blue}</span>`;
       } else {
-        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${points[0] + penalties[1]}</span>`;
+        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${inalPoints.red}</span>`;
         document.getElementById("m" + matchNumber + "b").innerHTML = `
         <div class="score-content">
-            <span>${points[1] + penalties[0]}</span>
+            <span>${finalPoints.blue}</span>
             <img src="./svg/winner.svg">
           </div>`;
       }

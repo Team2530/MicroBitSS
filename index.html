@@ -78,6 +78,11 @@
           onclick="stopTimer()"
         ></button>
         <button
+          title="Reveal Scores (R)"
+          style="background-image: url(./svg/reveal.svg)"
+          onclick="toggleScores()"
+        ></button>
+        <button
           title="Reset Timer (Loads next match)"
           style="background-image: url(./svg/restart.svg)"
           onclick="resetTimer()"
@@ -88,13 +93,10 @@
           onclick="document.getElementById('file-input').click()"
         ></button>
         <button
-          style="background-image: url(./svg/pause.svg)"
-          onclick="stopTimer()"
+          title="Change Team Names"
+          style="background-image: url(./svg/whitetoggle.svg)"
+          onclick="settings()"
         ></button>
-          <button
-            style="background-image: url(./svg/whitetoggle.svg)"
-            onclick="settings()"
-          ></button>
       </div>
     </div>
     </div>
