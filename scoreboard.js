@@ -67,25 +67,29 @@ function createScoreboard() {
 
     teamTable.innerHTML = "";
 
-    tr = document.createElement("tr");
+    const headTr = document.createElement("tr");
+    headTr.id = "team-header-row";
+
     Object.keys(teamMap).forEach(key => {
-      th = document.createElement("th");
+      const th = document.createElement("th");
+      th.id = "th-" + key;
       th.innerHTML = key;
-      tr.appendChild(th);
+      headTr.appendChild(th);
     });
 
-    teamTable.appendChild(tr);
+    teamTable.appendChild(headTr);
 
-    tr = document.createElement("tr");
+    const dataTr = document.createElement("tr");
+    dataTr.id = "team-data-row";
 
     Object.keys(teamMap).forEach(key => {
-      td = document.createElement("td");
+      const td = document.createElement("td");
       td.id = key;
       td.innerHTML = "0";
-      tr.appendChild(td);
+      dataTr.appendChild(td);
     });
 
-    teamTable.appendChild(tr);
+    teamTable.appendChild(dataTr);
   }
 }
 
@@ -125,10 +129,20 @@ function updateTeamScores() {
     }
 
     const sortedTeams = Object.entries(teamMap)
-      .sort((a, b) => b[1].wins - a[1].wins); 
+      .sort((a, b) => {
+        if (b[1].wins !== a[1].wins) return b[1].wins - a[1].wins;
+        return b[1].score - a[1].score;
+      }); 
 
     sortedTeams.forEach(([teamName, data], index) => {
       teamMap[teamName].rank = index + 1; 
+    });
+
+    // Record starting positions for animation
+    const oldXPositions = {};
+    sortedTeams.forEach(([teamName]) => {
+      const th = document.getElementById("th-" + teamName);
+      if (th) oldXPositions[teamName] = th.getBoundingClientRect().left;
     });
 
     Object.keys(teamMap).forEach(key => {
@@ -137,9 +151,49 @@ function updateTeamScores() {
         teamElement.innerHTML = `Rank: ${teamMap[key].rank} | Wins: ${teamMap[key].wins}`;
       }
     });
+
+    // Re-append cells to sort columns on screen
+    const headRow = document.getElementById("team-header-row");
+    const dataRow = document.getElementById("team-data-row");
+
+    if (headRow && dataRow) {
+      sortedTeams.forEach(([teamName]) => {
+        const th = document.getElementById("th-" + teamName);
+        const td = document.getElementById(teamName);
+        if (th) headRow.appendChild(th);
+        if (td) dataRow.appendChild(td);
+      });
+    }
+
+    sortedTeams.forEach(([teamName]) => {
+      const th = document.getElementById("th-" + teamName);
+      const td = document.getElementById(teamName);
+
+      if (th && td && oldXPositions[teamName] !== undefined) {
+        const newLeft = th.getBoundingClientRect().left;
+        const deltaX = oldXPositions[teamName] - newLeft;
+
+        if (deltaX !== 0) {
+          // 1. Shift elements back instantly to old positions
+          th.style.transition = "none";
+          td.style.transition = "none";
+          th.style.transform = `translateX(${deltaX}px)`;
+          td.style.transform = `translateX(${deltaX}px)`;
+
+          th.offsetHeight; // Force layout refresh
+
+          // 2. Delay the animation by 2 seconds (2000 ms)
+          setTimeout(() => {
+            th.style.transition = "transform 2.7s cubic-bezier(0.25, 1, 0.5, 1)";
+            td.style.transition = "transform 3.7s cubic-bezier(0.25, 1, 0.5, 1)";
+            th.style.transform = "translateX(0)";
+            td.style.transform = "translateX(0)";
+          }, 2000); // <-- Adjust delay time here in milliseconds (e.g., 1500 for 1.5s, 2000 for 2s)
+        }
+      }
+    });
   }
 }
-
 function createBracket() {
   if(matchesJSON != null) {
     if(confirm("Generating bracket will clear all other match data, do you wish to continue?")) {
