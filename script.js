@@ -48,28 +48,28 @@ blueTitle.innerHTML = "Blue";
 if (redDisplay) redDisplay.appendChild(redTitle);
 if (blueDisplay) blueDisplay.appendChild(blueTitle);
 
-// Button keymap
-KEYMAP = [
-  ["s", 0, 1],
-  ["s", 0, -1],
-  ["s", 1, 1],
-  ["s", 1, -1],
-  ["p", 0, 1],
-  ["p", 0, -1],
-  ["p", 1, 1],
-  ["p", 1, -1],
-];
-
 var matchesJSON = null;
 var matchNumber = 1;
 
 // Red, blue
-var points = [0, 0];
-var penalties = [0, 0];
+var points = {red:0, blue:0};
+var penalties = {red:0, blue:0};
+const resetAllPoints = () => {points = {red:0, blue:0};penalties = {red:0, blue:0};}
+
+const KEYMAP = [
+  ["s", "red", 1],
+  ["s", "red", -1],
+  ["s", "blue", 1],
+  ["s", "blue", -1],
+  ["p", "red", 1],
+  ["p", "red", -1],
+  ["p", "blue", 1],
+  ["p", "blue", -1],
+];
 
 // load matches.json (the default example) if "preload" is set to true
 window.onload = function () {
-  fetch("./Week2Quals.json")
+  fetch("matches/Week2Quals.json")
     .then((text) => text.text())
     .then((json) => JSON.parse(json))
     .then((json) => {
@@ -84,23 +84,41 @@ window.onload = function () {
     });
 };
 
-fileInput.onchange = function () {
-  reader = new FileReader();
+if (fileInput) {
+  fileInput.onchange = function () {
+  var reader = new FileReader(); 
   reader.readAsText(fileInput.files[0]);
 
   reader.onload = function () {
     try {
       matchesJSON = JSON.parse(reader.result);
+      ensureTeamDefaults();
+      console.log("JSON successfully loaded into global variable matchesJSON:", matchesJSON);
       matchNumber = 1;
       loadMatch(matchNumber);
       if (typeof createScoreboard === "function") {
       createScoreboard();
      } 
     } catch (error) {
-      alert("Unable to parse file!");
-    }
+       console.error(error);
+       alert(error.message);
+      }
+    };
   };
-};
+}
+
+function ensureTeamDefaults() {
+  if (!matchesJSON) return;
+  if (!matchesJSON.teams) matchesJSON.teams = {};
+
+  for (let i = 1; i <= 6; i++) {
+    const key = `Team ${i}`;
+    if (!matchesJSON.teams[key]) {
+      matchesJSON.teams[key] = { name: key };
+    }
+  }
+}
+
 
 document.addEventListener("keyup", (event) => {
   if (event.key == "r" && timePassed == initialTime) {
@@ -112,19 +130,18 @@ document.addEventListener("keyup", (event) => {
   } else if (event.key == "e" && timePassed != 0) {
     forceEnd();
   } else if ("12345678".includes(event.key) && timePassed != 0) {
-    let action = KEYMAP[parseInt(event.key) - 1];
-    console.log(`${event.key}: ${action}`);
+    const action = KEYMAP[parseInt(event.key) - 1];
     if (action[0] == "s") {
       points[action[1]] = Math.max(0, points[action[1]] + action[2]);
     } else {
       penalties[action[1]] = Math.max(0, penalties[action[1]] + action[2]);
     }
 
-    updateScore(false, points[0]);
-    updateScore(true, points[1]);
+    updateScore(false, points.red);
+    updateScore(true, points.blue);
 
-    updatePenalties(false, penalties[0]);
-    updatePenalties(true, penalties[1]);
+    updatePenalties(false, penalties.red);
+    updatePenalties(true, penalties.blue);
   }
 });
 
@@ -203,6 +220,14 @@ function stopTimer() {
   }
 }
 
+function settings() {
+  const url = "settings.html";
+  const windowName = "MBSS-config";
+  const windowFeatures = "width=500,height=600,resizable=yes,scrollbars=yes"; 
+
+  window.open(url, windowName, windowFeatures);
+}
+
 function forceEnd() { // Force end used for debug and test purposes. 
   if (timerInterval) {
     clearInterval(timerInterval);
@@ -233,8 +258,7 @@ function resetTimer() {
     loadMatch(++matchNumber);
   }
 
-  points = [0, 0];
-  penalties = [0, 0];
+  resetAllPoints();
 
   setTimeout(
     () => {
@@ -315,15 +339,8 @@ function toggleTeams(resetScores, toggleIcons) {
 }
 
 function changeIcons() {
-  if (matchesJSON != null && matchesJSON.icons != null) {
-    red = matchesJSON.icons[matchesJSON["m" + matchNumber].red];
-    blue = matchesJSON.icons[matchesJSON["m" + matchNumber].blue];
-    redIcon.src = "./team-icons/" + (red == null ? "default-red.svg" : red);
-    blueIcon.src = "./team-icons/" + (blue == null ? "default-blue.svg" : blue);
-  } else {
-    redIcon.src = "./team-icons/default-red.svg";
-    blueIcon.src = "./team-icons/default-blue.svg";
-  }
+  if (redIcon) redIcon.src = "./team-icons/default-red.svg";
+  if (blueIcon) blueIcon.src = "./team-icons/default-blue.svg";
 }
 
 function toggleScores() {
@@ -340,14 +357,18 @@ function toggleScores() {
     }
   } else {
     // update scores in reveal divs
-    document.getElementById("red-reveal-points").innerHTML =
-      points[0] + penalties[1];
-    document.getElementById("red-reveal-penalties").innerHTML = penalties[0];
-    document.getElementById("blue-reveal-points").innerHTML =
-      points[1] + penalties[0];
-    document.getElementById("blue-reveal-penalties").innerHTML = penalties[1];
+        const redPtsElem = document.getElementById("red-reveal-points");
+    const redPenElem = document.getElementById("red-reveal-penalties");
+    const bluePtsElem = document.getElementById("blue-reveal-points");
+    const bluePenElem = document.getElementById("blue-reveal-penalties");
 
-    winnerDiv = document.createElement("div");
+    if (redPtsElem) redPtsElem.innerHTML = points.red + penalties.blue;
+    if (redPenElem) redPenElem.innerHTML = penalties.red;
+    if (bluePtsElem) bluePtsElem.innerHTML = points.blue + penalties.red;
+    if (bluePenElem) bluePenElem.innerHTML = penalties.blue;
+
+    const winnerDiv = document.createElement("div");
+
     winnerDiv.id = "winner";
     winnerDiv.innerHTML = "Winner!";
 
@@ -359,20 +380,21 @@ function toggleScores() {
       blueReveal.removeChild(blueReveal.firstChild);
     }
 
-    winner = "";
+    var winner = "";
+    const finalPoints = {red:points.red + penalties.blue,blue:points.blue + penalties.red};
 
     // Winner logic
-    if (points[0] - penalties[0] > points[1] - penalties[1]) {
+    if (finalPoints.red > finalPoints.blue) {
       redReveal.insertBefore(winnerDiv, redReveal.firstChild);
       winner = "red";
-    } else if (points[0] - penalties[0] < points[1] - penalties[1]) {
+    } else if (finalPoints.red < finalPoints.blue) {
       blueReveal.insertBefore(winnerDiv, blueReveal.firstChild);
       winner = "blue";
-    } else if (points[0] - penalties[0] == points[1] - penalties[1]) {
-      if (penalties[0] < penalties[1]) {
+    } else {
+      if (penalties.red < penalties.blue) {
         redReveal.insertBefore(winnerDiv, redReveal.firstChild);
         winner = "red";
-      } else if (penalties[0] > penalties[1]) {
+      } else if (penalties.red > penalties.blue) {
         blueReveal.insertBefore(winnerDiv, blueReveal.firstChild);
         winner = "blue";
       } else {
@@ -384,27 +406,35 @@ function toggleScores() {
 
     if (matchesJSON != null && matchesJSON["m" + matchNumber]) {
       matchesJSON["m" + matchNumber].winner = winner;
-      matchesJSON["m" + matchNumber].rs = points[0] + penalties[1];
-      matchesJSON["m" + matchNumber].bs = points[1] + penalties[0];
+      matchesJSON["m" + matchNumber].rs = finalPoints.red;
+      matchesJSON["m" + matchNumber].bs = finalPoints.blue;
 
-      // also update bracket/scoreboard
-      if(winner == "") {
-        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${points[0] + penalties[1]}</span>`;
-        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${points[1] + penalties[0]}</span>`;
-      } else if(winner == "red") {
-        document.getElementById("m" + matchNumber + "r").innerHTML = 
-        `<div class="score-content">
-            <span>${points[0] + penalties[1]}</span>
-            <img src="./svg/winner.svg">
-          </div>`;
-        document.getElementById("m" + matchNumber + "b").innerHTML = `<span>${points[1] + penalties[0]}</span>`;
-      } else {
-        document.getElementById("m" + matchNumber + "r").innerHTML = `<span>${points[0] + penalties[1]}</span>`;
-        document.getElementById("m" + matchNumber + "b").innerHTML = `
-        <div class="score-content">
-            <span>${points[1] + penalties[0]}</span>
-            <img src="./svg/winner.svg">
-          </div>`;
+      const redMatchCell = document.getElementById("m" + matchNumber + "r");
+      const blueMatchCell = document.getElementById("m" + matchNumber + "b");
+
+      // Fixed typo: 'inalPoints.red' -> 'finalPoints.red'
+      if (redMatchCell && blueMatchCell) {
+        if (winner == "") {
+          redMatchCell.innerHTML = `<span>${finalPoints.red}</span>`;
+          blueMatchCell.innerHTML = `<span>${finalPoints.blue}</span>`;
+        } else if (winner == "red") {
+          redMatchCell.innerHTML = `<div class="score-content">
+              <span>${finalPoints.red}</span>
+              <img src="./svg/winner.svg">
+            </div>`;
+          blueMatchCell.innerHTML = `<span>${finalPoints.blue}</span>`;
+        } else {
+          redMatchCell.innerHTML = `<span>${finalPoints.red}</span>`;
+          blueMatchCell.innerHTML = `<div class="score-content">
+              <span>${finalPoints.blue}</span>
+              <img src="./svg/winner.svg">
+            </div>`;
+       }
+      }
+
+      if (typeof updateTeamScores === "function") {
+        updateTeamScores();
+        }
       }
 
     blueReveal.classList.remove("blue-reveal-exit");
@@ -414,24 +444,58 @@ function toggleScores() {
   }
 }
 
+function getTeamName(id) {
+  if (id == null) return "Team Default";
+  if (typeof id === "string") return id;
+
+  const teamKey = "Team " + id;
+  if (
+    matchesJSON &&
+    matchesJSON.teams &&
+    matchesJSON.teams[teamKey] &&
+    matchesJSON.teams[teamKey].name &&
+    matchesJSON.teams[teamKey].name.trim() !== ""
+  ) {
+    return matchesJSON.teams[teamKey].name;
+  }
+
+  return "Team " + id;
+}
+
+function getAllianceName(match, color) {
+  if (!match) return "";
+  const t1 = getTeamName(match[color + "1"]);
+  const t2 = getTeamName(match[color + "2"]);
+  return `${t1} & ${t2}`;
+}
+
 function loadMatch(number) {
 const matchSelector = document.getElementById("match-selector");
   if (matchSelector) {
     matchSelector.classList.replace("no-matches", "matches");
   }
 
-  matchNumber = Math.max(
-    Math.min(Object.keys(matchesJSON).join().match(/m/g).length, number),
-    1
-  );
+  if (!matchesJSON) return;
 
-  if (matchesJSON.bracket == false) {
-    matchData = matchesJSON["m" + matchNumber];
-    redTitle.innerHTML = matchData.red;
-    blueTitle.innerHTML = matchData.blue;
+  const totalMatches = Object.keys(matchesJSON).filter((k) => /^m\d+$/.test(k)).length;
+  matchNumber = Math.max(Math.min(totalMatches, number), 1);
 
-    document.getElementById("red-reveal-name").innerHTML = matchData.red;
-    document.getElementById("blue-reveal-name").innerHTML = matchData.blue;
+  const currentMatch = matchesJSON["m" + matchNumber];
+  if (!currentMatch) return;
+
+    const redRevealName = document.getElementById("red-reveal-name");
+    const blueRevealName = document.getElementById("blue-reveal-name");
+
+    if (matchesJSON.bracket === true || currentMatch.red !== undefined) {
+      const red = findTeamName(currentMatch.red);
+      const blue = findTeamName(currentMatch.blue);
+
+
+      redTitle.innerHTML = red;
+      blueTitle.innerHTML = blue;
+
+      if (redRevealName) redRevealName.innerHTML = red;
+    if (blueRevealName) blueRevealName.innerHTML = blue;
   } else {
     const redAlliance = getAllianceName(currentMatch, "red");
     const blueAlliance = getAllianceName(currentMatch, "blue");
@@ -457,6 +521,9 @@ const matchSelector = document.getElementById("match-selector");
 }
 
 function findTeamName(info) {
+  if (info == null) {
+    return "";
+  }
   if (info.toUpperCase().match(/(WINNER|LOSER) OF M\d+/g)) {
     // Find team based on what the info says, if winner then use the
     // .winner property, else get the opposite team

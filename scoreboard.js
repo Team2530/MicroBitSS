@@ -1,16 +1,3 @@
-let teamScores = [0, 0, 0, 0, 0, 0];
-const matchTableHeaders = `
-        <tr>
-            <th>Match</th>
-            <th>Red</th>
-            <th>Blue</th>
-            <th>Red Score</th>
-            <th>Blue Score</th>
-        </tr>`;
-
-const matchTable = document.getElementById("match-table");
-const teamTable = document.getElementById("team-table");
-const scoreboard = document.getElementById("scoreboard");
 
 const matchTableHeaders = `
   <tr>
@@ -50,83 +37,216 @@ function createScoreboard() {
 
   if (matchesJSON != null && matchTable && teamTable) {
     matchTable.innerHTML = matchTableHeaders;
-    totalMatches = Object.keys(matchesJSON).join().match(/m\d+/g).length;
-    teamMap = {}
 
-    for (i = 0; i < totalMatches; ++i) {
-        match = "m" + (i + 1);
-        tr = document.createElement("tr");
-        tr.id = match;
-        tr.innerHTML = `
-                    <td>${i + 1}</td>
-                    <td>${matchesJSON[match].red}</td>
-                    <td>${matchesJSON[match].blue}</td>
-                    <td id="${match + "r"}">
-                    <div class="score-content">
-                      <span>---</span>
-                    </div>
-                    </td>
-                    <td id="${match + "b"}">
-                    <div class="score-content">
-                      <span>---</span>
-                    </div>
-                    </td> `;
-        matchTable.appendChild(tr);
+    const matchKeys = Object.keys(matchesJSON).filter((k) => /^m\d+$/.test(k));
+    const totalMatches = matchKeys.length;
+    teamMap = {};
 
-        if (teamMap[matchesJSON[match].red] === undefined) {
-          teamMap[matchesJSON[match].red] = 0;
+    for (let i = 0; i < totalMatches; ++i) {
+      const match = "m" + (i + 1);
+      const currentMatch = matchesJSON[match];
+      if (!currentMatch) continue;
+
+      // Determine Alliance Names safely (Bracket string or Alliance teams)
+      let redName = "";
+      let blueName = "";
+
+      if (currentMatch.red !== undefined || currentMatch.blue !== undefined) {
+        redName = typeof findTeamName === "function" ? findTeamName(currentMatch.red) : currentMatch.red;
+        blueName = typeof findTeamName === "function" ? findTeamName(currentMatch.blue) : currentMatch.blue;
+      } else {
+        redName = getAllianceName(currentMatch, "red");
+        blueName = getAllianceName(currentMatch, "blue");
+      }
+
+      // Check for previously saved scores in JSON
+      const rs = currentMatch.rs !== undefined ? currentMatch.rs : "---";
+      const bs = currentMatch.bs !== undefined ? currentMatch.bs : "---";
+
+      const tr = document.createElement("tr");
+      tr.id = match;
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${redName}</td>
+        <td>${blueName}</td>
+        <td id="${match + "r"}">
+          <div class="score-content">
+            <span>${rs}</span>
+          </div>
+        </td>
+        <td id="${match + "b"}">
+          <div class="score-content">
+            <span>${bs}</span>
+          </div>
+        </td> `;
+      matchTable.appendChild(tr);
+
+      // Collect team IDs safely
+      [
+        currentMatch.red1,
+        currentMatch.red2,
+        currentMatch.blue1,
+        currentMatch.blue2,
+      ].forEach((id) => {
+        if (id !== undefined && id !== null) {
+          const name = getTeamName(id);
+          if (name && teamMap[name] === undefined) {
+            teamMap[name] = 0;
+          }
         }
-
-        if(teamMap[matchesJSON[match].blue] === undefined) {
-          teamMap[matchesJSON[match].blue] = 0;
-        }
+      });
     }
 
     // Build Team Rankings Table
     teamTable.innerHTML = "";
 
-    tr = document.createElement("tr");
-    Object.keys(teamMap).forEach(key => {
-      th = document.createElement("th");
+    const headTr = document.createElement("tr");
+    headTr.id = "team-header-row";
+
+    Object.keys(teamMap).forEach((key) => {
+      const th = document.createElement("th");
+      th.id = "th-" + key;
       th.innerHTML = key;
-      tr.appendChild(th);
+      headTr.appendChild(th);
     });
 
-    teamTable.appendChild(tr);
+    teamTable.appendChild(headTr);
 
-    tr = document.createElement("tr");
+    const dataTr = document.createElement("tr");
+    dataTr.id = "team-data-row";
 
-    Object.keys(teamMap).forEach(key => {
-      td = document.createElement("td");
+    Object.keys(teamMap).forEach((key) => {
+      const td = document.createElement("td");
       td.id = key;
       td.innerHTML = "0";
-      tr.appendChild(td);
+      dataTr.appendChild(td);
     });
 
-    teamTable.appendChild(tr);
+    teamTable.appendChild(dataTr);
+
+    // Initial update to scores
+    updateTeamScores();
   }
 }
 
 function updateTeamScores() {
-  if(matchesJSON != null) {
-    Object.keys(teamMap).forEach(key => {
-      teamMap[key] = 0;
+  if (matchesJSON != null) {
+    Object.keys(teamMap).forEach((key) => {
+      teamMap[key] = { score: 0, wins: 0, rank: 0 };
     });
 
-    totalMatches = Object.keys(matchesJSON).join().match(/m\d+/g).length;
-    for (i = 0; i < totalMatches; ++i) {
-      match = "m" + (i + 1);
-      if(matchesJSON[match].rs !== undefined) {
-        teamMap[matchesJSON[match].red] += matchesJSON[match].rs;
+    const matchKeys = Object.keys(matchesJSON).filter((k) => /^m\d+$/.test(k));
+    const totalMatches = matchKeys.length;
+
+    for (let i = 0; i < totalMatches; ++i) {
+      const match = "m" + (i + 1);
+      const currentMatch = matchesJSON[match];
+
+      if (
+        !currentMatch ||
+        currentMatch.rs == null ||
+        currentMatch.bs == null
+      ) {
+        continue;
       }
 
-      if(matchesJSON[match].bs !== undefined) {
-        teamMap[matchesJSON[match].blue] += matchesJSON[match].bs;
+      // Add Red team points
+      [currentMatch.red1, currentMatch.red2].forEach((id) => {
+        if (id !== undefined) {
+          const name = getTeamName(id);
+          if (teamMap[name]) teamMap[name].score += currentMatch.rs;
+        }
+      });
+
+      // Add Blue team points
+      [currentMatch.blue1, currentMatch.blue2].forEach((id) => {
+        if (id !== undefined) {
+          const name = getTeamName(id);
+          if (teamMap[name]) teamMap[name].score += currentMatch.bs;
+        }
+      });
+
+      // Win counter
+      if (currentMatch.rs > currentMatch.bs) {
+        [currentMatch.red1, currentMatch.red2].forEach((id) => {
+          if (id !== undefined) {
+            const name = getTeamName(id);
+            if (teamMap[name]) teamMap[name].wins += 1;
+          }
+        });
+      } else if (currentMatch.bs > currentMatch.rs) {
+        [currentMatch.blue1, currentMatch.blue2].forEach((id) => {
+          if (id !== undefined) {
+            const name = getTeamName(id);
+            if (teamMap[name]) teamMap[name].wins += 1;
+          }
+        });
       }
     }
 
-    Object.keys(teamMap).forEach(key => {
-      document.getElementById(key).innerHTML = teamMap[key];
+    const sortedTeams = Object.entries(teamMap).sort((a, b) => {
+      if (b[1].wins !== a[1].wins) return b[1].wins - a[1].wins;
+      return b[1].score - a[1].score;
+    });
+
+    sortedTeams.forEach(([teamName, data], index) => {
+      if (teamMap[teamName]) teamMap[teamName].rank = index + 1;
+    });
+
+    // Record starting positions for animation
+    const oldXPositions = {};
+    sortedTeams.forEach(([teamName]) => {
+      const th = document.getElementById("th-" + teamName);
+      if (th) oldXPositions[teamName] = th.getBoundingClientRect().left;
+    });
+
+    Object.keys(teamMap).forEach((key) => {
+      const teamElement = document.getElementById(key);
+      if (teamElement && teamMap[key]) {
+        teamElement.innerHTML = `Rank: ${teamMap[key].rank} | Wins: ${teamMap[key].wins}`;
+      }
+    });
+
+    // Re-append cells to sort columns on screen
+    const headRow = document.getElementById("team-header-row");
+    const dataRow = document.getElementById("team-data-row");
+
+    if (headRow && dataRow) {
+      sortedTeams.forEach(([teamName]) => {
+        const th = document.getElementById("th-" + teamName);
+        const td = document.getElementById(teamName);
+        if (th) headRow.appendChild(th);
+        if (td) dataRow.appendChild(td);
+      });
+    }
+
+    // Run position animation
+    sortedTeams.forEach(([teamName]) => {
+      const th = document.getElementById("th-" + teamName);
+      const td = document.getElementById(teamName);
+
+      if (th && td && oldXPositions[teamName] !== undefined) {
+        const newLeft = th.getBoundingClientRect().left;
+        const deltaX = oldXPositions[teamName] - newLeft;
+
+        if (deltaX !== 0) {
+          th.style.transition = "none";
+          td.style.transition = "none";
+          th.style.transform = `translateX(${deltaX}px)`;
+          td.style.transform = `translateX(${deltaX}px)`;
+
+          void th.offsetHeight; // Force layout refresh
+
+          setTimeout(() => {
+            th.style.transition =
+              "transform 3.7s cubic-bezier(0.25, 1, 0.5, 1)";
+            td.style.transition =
+              "transform 3.7s cubic-bezier(0.25, 1, 0.5, 1)";
+            th.style.transform = "translateX(0)";
+            td.style.transform = "translateX(0)";
+          }, 8000);
+        }
+      }
     });
   }
 }
