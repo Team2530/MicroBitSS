@@ -31,10 +31,10 @@ end.preload = "auto";
 endgame.preload = "auto";
 teleop.preload = "auto";
 
-// seconds for timer
+/** seconds for timer */
 var initialTime = 140;
 
-// rankings
+/** rankings */
 const teams = [];
 
 /**
@@ -53,9 +53,9 @@ if (timeDisplay) {
 var timePassed = 0;
 var timerInterval = null;
 
-var redTitle = document.createElement("span");
+const redTitle = document.createElement("span");
 redTitle.innerHTML = "Red";
-var blueTitle = document.createElement("span");
+const blueTitle = document.createElement("span");
 blueTitle.innerHTML = "Blue";
 
 if (redDisplay) redDisplay.appendChild(redTitle);
@@ -90,7 +90,7 @@ window.onload = function () {
         matchesJSON = json;
         ensureTeamDefaults();
         loadMatch(matchNumber);
-        if (typeof createScoreboard === "function") {
+        if (typeof createScoreboard === "function") { // fallback on external function
           createScoreboard();
         }
       }
@@ -99,7 +99,7 @@ window.onload = function () {
 
 if (fileInput) {
   fileInput.onchange = function () {
-  var reader = new FileReader(); 
+  const reader = new FileReader(); 
   reader.readAsText(fileInput.files[0]);
 
   reader.onload = function () {
@@ -110,8 +110,8 @@ if (fileInput) {
       matchNumber = 1;
       loadMatch(matchNumber);
       if (typeof createScoreboard === "function") {
-      createScoreboard();
-     } 
+        createScoreboard();
+      } 
     } catch (error) {
        console.error(error);
        alert(error.message);
@@ -131,7 +131,6 @@ function ensureTeamDefaults() {
     }
   }
 }
-
 
 document.addEventListener("keyup", (event) => {
   if (event.key == "r" && timePassed == initialTime) {
@@ -228,56 +227,48 @@ function formatDisplayTime(time) {
 }
 
 function startTimer() {
-  if (!timeDisplay) return;
-
-  if (timePassed == 0) {
-    start.play();
-  }
+  if (!timeDisplay) {return;}
+  if (timePassed == 0) {start.play();}
 
   timeDisplay.classList = "timer-white";
 
-  if (timePassed != initialTime) {
-    if (timerInterval == null) {
+  if (timePassed == initialTime) {return;}
+  if (timerInterval) {return;}
+  timeDisplay.innerHTML = formatDisplayTime(initialTime - timePassed);
+  changeCirclePercent();
+  timerInterval = setInterval(() => {
+      timePassed += 1;
+
       timeDisplay.innerHTML = formatDisplayTime(initialTime - timePassed);
+
+      if (timePassed == initialTime) {stopTimer();}
+
       changeCirclePercent();
 
-      timerInterval = setInterval(() => {
-        timePassed += 1;
+      if (
+        BUZZER_TIMES.TELEOP &&
+        initialTime - timePassed == BUZZER_TIMES.TELEOP
+      ) {
+        teleop.play();
+      } else if (
+        BUZZER_TIMES.ENDGAME &&
+        initialTime - timePassed == BUZZER_TIMES.ENDGAME
+      ) {
+        endgame.play();
+      } else if (initialTime - timePassed == 0) {
+        end.play();
+      }
 
-        timeDisplay.innerHTML = formatDisplayTime(initialTime - timePassed);
-
-        if (timePassed == initialTime) {
-          stopTimer();
-        }
-
-        changeCirclePercent();
-
-        if (
-          BUZZER_TIMES.TELEOP != null &&
-          initialTime - timePassed == BUZZER_TIMES.TELEOP
-        ) {
-          teleop.play();
-        } else if (
-          BUZZER_TIMES.ENDGAME != null &&
-          initialTime - timePassed == BUZZER_TIMES.ENDGAME
-        ) {
-          endgame.play();
-        } else if (initialTime - timePassed == 0) {
-          end.play();
-        }
-
-        if (initialTime - timePassed <= 10) {
-          if (displayCircle) displayCircle.classList = "circle-red";
-          timeDisplay.classList.add("timer-end");
-          void timeDisplay.offsetWidth;
-        } else if (initialTime - timePassed <= 30) {
-          if (displayCircle) displayCircle.classList = "circle-orange";
-        } else {
-          if (displayCircle) displayCircle.classList = "circle-green";
-        }
-      }, 1000);
-    }
-  }
+      if (initialTime - timePassed <= 10) {
+        if (displayCircle) displayCircle.classList = "circle-red";
+        timeDisplay.classList.add("timer-end");
+        void timeDisplay.offsetWidth;
+      } else if (initialTime - timePassed <= 30) {
+        if (displayCircle) displayCircle.classList = "circle-orange";
+      } else {
+        if (displayCircle) displayCircle.classList = "circle-green";
+      }
+  }, 1000);
 }
 
 function stopTimer() {
@@ -292,11 +283,10 @@ function stopTimer() {
 }
 
 function settings() {
-  const url = "settings.html";
   const windowName = "MBSS-config";
   const windowFeatures = "width=500,height=600,resizable=yes,scrollbars=yes"; 
 
-  window.open(url, windowName, windowFeatures);
+  window.open("settings.html", windowName, windowFeatures);
 }
 
 function forceEnd() { // Force end used for debug and test purposes. 
@@ -357,15 +347,15 @@ function resetTimer() {
 function updateScore(isBlue, score) {
   if (isBlue) {
     if (blueDisplay) {
-    blueDisplay.innerHTML = "";
-    blueDisplay.appendChild(blueTitle);
-    blueDisplay.innerHTML += score;
+      blueDisplay.innerHTML = "";
+      blueDisplay.appendChild(blueTitle);
+      blueDisplay.innerHTML += score;
     }
   } else {
-  if (redDisplay) {
-    redDisplay.innerHTML = "";
-    redDisplay.appendChild(redTitle);
-    redDisplay.innerHTML += score;
+    if (redDisplay) {
+      redDisplay.innerHTML = "";
+      redDisplay.appendChild(redTitle);
+      redDisplay.innerHTML += score;
     }
   }
 }
@@ -449,7 +439,7 @@ function toggleScores() {
     }
   } else {
     // update scores in reveal divs
-        const redPtsElem = document.getElementById("red-reveal-points");
+    const redPtsElem = document.getElementById("red-reveal-points");
     const redPenElem = document.getElementById("red-reveal-penalties");
     const bluePtsElem = document.getElementById("blue-reveal-points");
     const bluePenElem = document.getElementById("blue-reveal-penalties");
@@ -526,8 +516,8 @@ function toggleScores() {
 
       if (typeof updateTeamScores === "function") {
         updateTeamScores();
-        }
       }
+    }
 
     blueReveal.classList.remove("blue-reveal-exit");
     redReveal.classList.remove("red-reveal-exit");
@@ -567,26 +557,26 @@ const matchSelector = document.getElementById("match-selector");
     matchSelector.classList.replace("no-matches", "matches");
   }
 
-  if (!matchesJSON) return;
+  if (matchesJSON == null) return;
 
   const totalMatches = Object.keys(matchesJSON).filter((k) => /^m\d+$/.test(k)).length;
   matchNumber = Math.max(Math.min(totalMatches, number), 1);
 
   const currentMatch = matchesJSON["m" + matchNumber];
-  if (!currentMatch) return;
+  if (!currentMatch) {return;}
 
-    const redRevealName = document.getElementById("red-reveal-name");
-    const blueRevealName = document.getElementById("blue-reveal-name");
+  const redRevealName = document.getElementById("red-reveal-name");
+  const blueRevealName = document.getElementById("blue-reveal-name");
 
-    if (matchesJSON.bracket === true || currentMatch.red !== undefined) {
-      const red = findTeamName(currentMatch.red);
-      const blue = findTeamName(currentMatch.blue);
+  if (matchesJSON.bracket === true || currentMatch.red !== undefined) {
+    const red = findTeamName(currentMatch.red);
+    const blue = findTeamName(currentMatch.blue);
 
 
-      redTitle.innerHTML = red;
-      blueTitle.innerHTML = blue;
+    redTitle.innerHTML = red;
+    blueTitle.innerHTML = blue;
 
-      if (redRevealName) redRevealName.innerHTML = red;
+    if (redRevealName) redRevealName.innerHTML = red;
     if (blueRevealName) blueRevealName.innerHTML = blue;
   } else {
     const redAlliance = getAllianceName(currentMatch, "red");
@@ -613,9 +603,7 @@ const matchSelector = document.getElementById("match-selector");
 }
 
 function findTeamName(info) {
-  if (info == null) {
-    return "";
-  }
+  if (info == null) return "";
   if (info.toUpperCase().match(/(WINNER|LOSER) OF M\d+/g)) {
     // Find team based on what the info says, if winner then use the
     // .winner property, else get the opposite team
@@ -635,4 +623,4 @@ function findTeamName(info) {
   } else {
     return getTeamName(info);
   }
-}//
+}
