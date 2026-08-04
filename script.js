@@ -1,9 +1,22 @@
 const timeDisplay = document.getElementById("timer-display");
 const displayCircle = document.getElementById("timer-circle");
+
 const redDisplay = document.getElementById("red-score");
+const redHoney = document.getElementById("red-honey");
+const redPollen = document.getElementById("red-pollen");
+const redFrame = document.getElementById("red-frame");
 const redIcon = document.getElementById("red-icon");
+
+
 const blueDisplay = document.getElementById("blue-score");
 const blueIcon = document.getElementById("blue-icon");
+const bluePollen = document.getElementById("blue-pollen");
+const blueFrame = document.getElementById("blue-frame");
+const blueHoney = document.getElementById("blue-honey");
+
+const bluePenalties = document.getElementById("blue-penalties");
+const redPenalties = document.getElementById("red-penalties");
+
 const redReveal = document.getElementById("red-reveal");
 const blueReveal = document.getElementById("blue-reveal");
 const fileInput = document.getElementById("file-input");
@@ -124,6 +137,50 @@ document.addEventListener("keyup", (event) => {
     updatePenalties(true, penalties.blue);
   }
 });
+
+window.addEventListener("gamepadconnected", (event) => {
+  console.log("Controller connected:", event.gamepad.id);
+  gamepadIndex = event.gamepad.index;
+  pollGamepad();
+});
+
+window.addEventListener("gamepaddisconnected", (event) => {
+  console.log("Gamepad disconnected:", event.gamepad.id);
+});
+
+function pollGamepads() {
+  const gamepads = navigator.getGamepads();
+  const redScoreController = gamepads[0]; 
+  const blueScoreController = gamepads[1]; 
+  if (redScoreController) {
+    if (redScoreController.buttons[0].pressed) { // A, Pollen
+      updateScore(false, points.red + 5);
+    }
+    if (redScoreController.buttons[1].pressed) {
+      console.log("B button pressed");
+    }
+    if (redScoreController.buttons[2].pressed) {
+      console.log("X button pressed");
+    }
+    if (redScoreController.buttons[3].pressed) {
+      console.log("Y button pressed");
+    }
+    if (redScoreController.buttons[4].pressed) {
+      console.log("Left bumper pressed");
+    }
+    if (redScoreController.buttons[5].pressed) {
+      console.log("Right bumper pressed");
+    }
+    if (redScoreController.buttons[8].pressed) {
+      console.log("Back button pressed");
+    }
+    if (redScoreController.buttons[9].pressed) {
+      console.log("Forward button pressed");
+    } 
+  }
+
+  requestAnimationFrame(pollGamepads);
+}
 
 function formatDisplayTime(time) {
   var minutes = Math.floor(time / 60);
@@ -271,9 +328,33 @@ function updateScore(isBlue, score) {
 
 function updatePenalties(isBlue, penalties) {
   if (isBlue) {
-    document.getElementById("blue-penalties").innerHTML = penalties;
+    bluePenalties.innerHTML = "";
+    bluePenalties.appendChild(blueTitle);
+    bluePenalties.innerHTML += score;
   } else {
-    document.getElementById("red-penalties").innerHTML = penalties;
+    redPenalties.innerHTML = "";
+    redPenalties.appendChild(redTitle);
+    redPenalties.innerHTML += score;
+  }
+}
+
+function updateGamePiece(isblue, piece, count) {
+  if (isBlue) {
+    if (piece == "pollen") {
+      bluePollen.innerHTML = count;
+    } else if (piece == "honey") {
+      blueHoney.innerHTML = count;
+    } else if (piece == "frame") {
+      blueFrame.innerHTML = count;
+    }
+  } else {
+    if (piece == "pollen") {
+      redPollen.innerHTML = count;
+    } else if (piece == "honey") {
+      redHoney.innerHTML = count;
+    } else if (piece == "frame") {
+      redFrame.innerHTML = count;
+    }
   }
 }
 
