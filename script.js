@@ -27,6 +27,8 @@ const teleop = new Audio("./sounds/teleop.mp3");
 const end = new Audio("./sounds/endbuzzer.mp3");
 const endgame = new Audio("./sounds/whistle.mp3");
 
+var started = false;
+
 start.preload = "auto";
 end.preload = "auto";
 endgame.preload = "auto";
@@ -202,7 +204,7 @@ function pollGamepads() {
   const redScoreController = navigator.getGamepads()[0];
   const blueScoreController = navigator.getGamepads()[1];
 
-  if (timePassed >= 0) {
+  if (started) {
     if (redScoreController) {
       redScoreController.buttons.forEach((button, index) => {
         const wasPressed = previousRedButtons[index] || false;
@@ -327,6 +329,9 @@ function formatDisplayTime(time) {
 }
 
 function startTimer() {
+
+  started = true;
+
   if (!timeDisplay) {return;}
   if (timePassed == 0) {start.play();}
 
@@ -372,6 +377,7 @@ function startTimer() {
 }
 
 function stopTimer() {
+  started = false;
   clearInterval(timerInterval);
   timerInterval = null;
   if (!timeDisplay) return;
@@ -400,7 +406,7 @@ function forceEnd() { // Force end used for debug and test purposes.
     timeDisplay.classList.add("timer-end");
   }
   if (displayCircle) displayCircle.classList = "circle-red"; 
-  
+  started = false;
   end.play(); 
 }
 
