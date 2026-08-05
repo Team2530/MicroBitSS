@@ -25,6 +25,9 @@ var initialTime = 140;
 /** rankings */
 const teams = [];
 
+/** Control mode state ('microbit' or 'bluetooth') */
+var currentControlMode = localStorage.getItem("controlMode") || "microbit";
+
 /**
  * Times for the "teleop" and "endgame" sounds to play,
  * if they are null, the sound will not play
@@ -68,8 +71,24 @@ const KEYMAP = [
   ["p", "blue", -1],
 ];
 
+// Load saved control mode setting & apply breakdown row visibilities
+function updateControlMode(newMode) {
+  currentControlMode = newMode;
+  localStorage.setItem("controlMode", newMode);
+  applyControlModeUI();
+}
+
+function applyControlModeUI() {
+  const advancedRows = document.querySelectorAll(".advanced-breakdown-row");
+  if (!advancedRows) return;
+  advancedRows.forEach((row) => {
+    row.style.display = currentControlMode === "bluetooth" ? "flex" : "none";
+  });
+}
+
 // load matches.json (the default example) if "preload" is set to true
 window.onload = function () {
+  applyControlModeUI();
   fetch("matches/Week2Quals.json")
     .then((text) => text.text())
     .then((json) => JSON.parse(json))
@@ -337,6 +356,7 @@ function changeIcons() {
 function toggleScores() {
   if (!redReveal || !blueReveal) return;
 
+  applyControlModeUI();
   const breakdownCard = document.getElementById("breakdown-card");
 
   if (breakdownTimeout) {
@@ -390,7 +410,7 @@ function toggleScores() {
 
     winnerDiv.id = "winner";
     winnerDiv.innerHTML = `
-   <img src="images/troph.svg" class="winner-icon" alt="Winner Icon" />
+   <img src="/images/troph.svg" class="winner-icon" alt="Winner Icon" />
     <span>Winner!</span>
     `;
 
@@ -433,7 +453,6 @@ function toggleScores() {
       const redMatchCell = document.getElementById("m" + matchNumber + "r");
       const blueMatchCell = document.getElementById("m" + matchNumber + "b");
 
-      // Fixed typo: 'inalPoints.red' -> 'finalPoints.red'
       if (redMatchCell && blueMatchCell) {
         if (winner == "") {
           redMatchCell.innerHTML = `<span>${finalPoints.red}</span>`;
