@@ -7,13 +7,14 @@ const redHoney = document.getElementById("red-honey");
 const redPollen = document.getElementById("red-pollen");
 const redFrame = document.getElementById("red-frame");
 const redIcon = document.getElementById("red-icon");
-
+const redLeave = document.getElementById("red-leave");
 
 const blueDisplay = document.getElementById("blue-score");
 const blueIcon = document.getElementById("blue-icon");
 const bluePollen = document.getElementById("blue-pollen");
 const blueFrame = document.getElementById("blue-frame");
 const blueHoney = document.getElementById("blue-honey");
+const blueLeave = document.getElementById("blue-leave");
 
 const bluePenalties = document.getElementById("blue-penalties");
 const redPenalties = document.getElementById("red-penalties");
@@ -214,6 +215,7 @@ function pollGamepads() {
             case 0: // A
               if (timePassed >= 110) {
                 points.red += 5;
+                updateGamePiece(false, "pollen", 1);
               }
               break;
             case 1: // B
@@ -222,6 +224,7 @@ function pollGamepads() {
               } else {
                 points.red += 7;
               }
+              updateGamePiece(false, "honey", 1);
               break;
             case 2: // X
               if (timePassed >= 20) {
@@ -229,21 +232,26 @@ function pollGamepads() {
               } else {
                 points.red += 3;
               }
+              updateGamePiece(false, "honey", 1);
               break;
             case 3: // Y
               if (timePassed >= 20) {
                 points.red += 2;
               } else {
                 points.red += 5;
+                
               }
+              updateGamePiece(false, "honey", 1);
               break;
             case 4: // LB
               if (timePassed <= 20) {
                 points.red += 3;
+                updateGamePiece(false, "leave", 1);
               }
               break;
             case 5: // RB
               points.red += 5;
+              updateGamePiece(false, "frame", 1);
               break;
             case 8: // Back
               console.log("Undo pressed");
@@ -268,6 +276,7 @@ function pollGamepads() {
             case 0: // A
               if (timePassed >= 110) {
                 points.blue += 5;
+                updateGamePiece(true, "pollen", 1);
               }
               break;
             case 1: // B
@@ -276,6 +285,7 @@ function pollGamepads() {
               } else {
                 points.blue += 7;
               }
+              updateGamePiece(true, "honey", 1);
               break;
             case 2: // X
               if (timePassed >= 20) {
@@ -283,6 +293,7 @@ function pollGamepads() {
               } else {
                 points.blue += 3;
               }
+              updateGamePiece(true, "honey", 1);
               break;
             case 3: // Y
               if (timePassed >= 20) {
@@ -290,14 +301,17 @@ function pollGamepads() {
               } else {
                 points.blue += 5;
               }
+              updateGamePiece(true, "honey", 1);
               break;
             case 4: // LB
               if (timePassed <= 20) {
                 points.blue += 3;
+                updateGamePiece(true, "leave", 1);
               }
               break;
             case 5: // RB
               points.blue += 5;
+              updateGamePiece(true, "frame", 1);
               break;
             case 8: // Back
               console.log("Undo pressed");
@@ -479,23 +493,28 @@ function updatePenalties(isBlue, penalties) {
 }
 
 function updateGamePiece(isblue, piece, count) {
-  if (isBlue) {
-    if (piece == "pollen") {
-      bluePollen.innerHTML = count;
-    } else if (piece == "honey") {
-      blueHoney.innerHTML = count;
-    } else if (piece == "frame") {
-      blueFrame.innerHTML = count;
-    }
-  } else {
-    if (piece == "pollen") {
-      redPollen.innerHTML = count;
-    } else if (piece == "honey") {
-      redHoney.innerHTML = count;
-    } else if (piece == "frame") {
-      redFrame.innerHTML = count;
-    } 
-  }
+  // if (isblue) {
+  //   if (piece == "pollen") {
+  //     bluePollen.innerHTML = count;
+  //   } else if (piece == "honey") {
+  //     blueHoney.innerHTML = count;
+  //   } else if (piece == "frame") {
+  //     blueFrame.innerHTML = count;
+  //   } else if (piece == "leave") {
+  //     blueLeave.innerHTML = count;
+  //   }
+  // } else {
+  //   if (piece == "pollen") {
+  //     redPollen.innerHTML = count;
+  //   } else if (piece == "honey") {
+  //     redHoney.innerHTML = count;
+  //   } else if (piece == "frame") {
+  //     redFrame.innerHTML = count;
+  //   } else if (piece == "leave") {
+  //     blueLeave.innerHTML = count;
+  //   }
+  // }
+  console.log(`Increased ${isblue ? "blue" : "red"} ${piece} by ${count}`);
 }
 
 function toggleTeams(resetScores, toggleIcons) {
