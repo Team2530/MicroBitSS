@@ -94,7 +94,7 @@
           onclick="document.getElementById('file-input').click()"
         ></button>
         <button
-          title="Change Team Names"
+          title="Change Settings"
           style="background-image: url(./svg/whitetoggle.svg)"
           onclick="settings()"
         ></button>
@@ -105,7 +105,6 @@
       <div class="reveal-score">
         <div id="blue-reveal-name">Blue</div>
         <div id="blue-reveal-points" class="points">250</div>
-        <!-- <div id="blue-reveal-penalties" class="penalties">100</div> -->
       </div>
     </div>
 
@@ -117,27 +116,43 @@
   </div>
 
   <div class="breakdown-section-title">TELEOP</div>
+      <div class="breakdown-section-title">AUTO</div>
+      <div class="breakdown-row advanced-breakdown-row">
+        <span id="red-auto-leave">0</span>
+        <span class="label">LEAVE POINTS</span>
+        <span id="blue-auto-leave">0</span>
+      </div>
 
-  <div class="breakdown-row">
-    <span id="red-breakdown-points">0</span>
-    <span class="label">TOTAL POINTS</span>
-    <span id="blue-breakdown-points">0</span>
-  </div>
+      <div class="breakdown-section-title">TELEOP</div>
+      <div class="breakdown-row">
+        <span id="red-breakdown-points">0</span>
+        <span class="label">TOTAL POINTS</span>
+        <span id="blue-breakdown-points">0</span>
+      </div>
 
-  <div class="breakdown-section-title">FOULS</div>
+      <div class="breakdown-row advanced-breakdown-row">
+        <span id="red-coral-points">0</span>
+        <span class="label">CORAL SCORED</span>
+        <span id="blue-coral-points">0</span>
+      </div>
+      <div class="breakdown-row advanced-breakdown-row">
+        <span id="red-algae-points">0</span>
+        <span class="label">ALGAE SCORED</span>
+        <span id="blue-algae-points">0</span>
+      </div>
 
-  <div class="breakdown-row">
-    <span id="red-breakdown-penalties">0</span>
-    <span class="label">PENALTIES</span>
-    <span id="blue-breakdown-penalties">0</span>
-  </div>
-</div>
+      <div class="breakdown-section-title">FOULS</div>
+      <div class="breakdown-row">
+        <span id="red-breakdown-penalties">0</span>
+        <span class="label">PENALTIES</span>
+        <span id="blue-breakdown-penalties">0</span>
+      </div>
+    </div>
 
     <div id="red-reveal" class="reveal red-reveal-exit">
       <div class="reveal-score">
         <div id="red-reveal-name">Red</div>
         <div id="red-reveal-points" class="points">300</div>
-        <!-- <div id="red-reveal-penalties" class="penalties">15</div> -->
       </div>
     </div>
 
@@ -156,5 +171,4 @@
       <img class="tournament" src="./svg/tournament.svg" alt="" onclick="createBracket()">
     </div>
   </body>
-  
 </html>

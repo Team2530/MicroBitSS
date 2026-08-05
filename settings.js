@@ -1,5 +1,12 @@
-document.getElementById('save-btn').addEventListener('click', () => {
+document.addEventListener("DOMContentLoaded", () => {
+  const savedMode = localStorage.getItem("controlMode") || "microbit";
+  const controlSelect = document.getElementById("control-mode");
+  if (controlSelect) {
+    controlSelect.value = savedMode;
+  }
+});
 
+document.getElementById('save-btn').addEventListener('click', () => {
     const customNames = {
         "Team 1": document.getElementById('team1').value.trim(),
         "Team 2": document.getElementById('team2').value.trim(),
@@ -9,10 +16,23 @@ document.getElementById('save-btn').addEventListener('click', () => {
         "Team 6": document.getElementById('team6').value.trim()
     };
 
+    const controlModeSelect = document.getElementById('control-mode');
+    const selectedControlMode = controlModeSelect ? controlModeSelect.value : 'microbit';
+
+    localStorage.setItem('controlMode', selectedControlMode);
+
     if (window.opener && !window.opener.closed) {
 
-        if (window.opener.matchesJSON) {
+        if (typeof window.opener.updateControlMode === 'function') {
+            window.opener.updateControlMode(selectedControlMode);
+        } else {
+            window.opener.currentControlMode = selectedControlMode;
+            if (typeof window.opener.applyControlModeUI === 'function') {
+                window.opener.applyControlModeUI();
+            }
+        }
 
+        if (window.opener.matchesJSON) {
             for (let i = 1; i <= 6; i++) {
                 const teamKey = `Team ${i}`;
                 const newName = customNames[teamKey];
@@ -30,14 +50,15 @@ document.getElementById('save-btn').addEventListener('click', () => {
                 window.opener.createScoreboard();
             }
 
-            alert("Team names successfully updated.");
+            alert("Settings successfully updated.");
             window.close();
 
         } else {
-            alert("Please load your .json template or upload a file first.");
+            alert("Control mode saved. (Load your .json template to apply custom team names).");
+            window.close();
         }
 
     } else {
-        alert("Main window is unavailable.");
+        alert("Settings saved to local storage, but main window is unavailable.");
     }
 });

@@ -60,7 +60,18 @@
 </head>
 <body>
     <div class="container">
-        <h2>Customize Team Names</h2>
+        <h2>Settings</h2>
+        
+        <div class="input-group">
+            <label for="control-mode">Control Method:</label>
+            <select id="control-mode">
+                <option value="microbit">Micro:bit Mode (Basic: Teleop & Fouls)</option>
+                <option value="bluetooth">Bluetooth Controller (Advanced Breakdown)</option>
+            </select>
+        </div>
+
+        <div class="divider"></div>
+
         
         <div class="input-group">
             <label for="team1">Team 1 Name:</label>
@@ -87,10 +98,10 @@
             <input type="text" id="team6" placeholder="Leave blank for default">
         </div>
 
-        <button id="save-btn">Save & Apply Names</button>
-        <div style="text-align: center;">
+        <button id="save-btn">Save & Apply Settings</button>
+        <div style="text-align: center; margin-top: 15px;">
             <img src="team-icons/SQRT.jpg" alt="SQRT" style="max-width: 60%;">
-            </div>
+        </div>
     </div>
 
     <script src="settings.js"></script>

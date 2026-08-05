@@ -211,11 +211,11 @@ span {
 
 .breakdown-card {
   position: absolute;
-  top: 50%;
+  top: 55%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 620px;
-  height: 465px;
+  width: 720px;
+  height: 565px;
   background-color: #e6e6e6;
   color: #222;
   border-radius: 8px;
@@ -251,6 +251,7 @@ span {
 
 .breakdown-row.header {
   background-color: #ffffff;
+  text-align: center;
   border-bottom: 2px solid #ccc;
   font-size: 32px;
 }
