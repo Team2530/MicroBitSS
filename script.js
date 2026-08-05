@@ -711,6 +711,10 @@ function toggleScores() {
     if (breakdownCard) {
       breakdownTimeout = setTimeout(() => {
         breakdownCard.classList.remove("hidden");
+        if (winner !== "") {
+          console.log('confetti time')
+          confetti({count: 1000});
+        }
       }, 1900);
     }
   }
