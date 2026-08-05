@@ -1,9 +1,23 @@
+let breakdownTimeout = null;
 const timeDisplay = document.getElementById("timer-display");
 const displayCircle = document.getElementById("timer-circle");
+
 const redDisplay = document.getElementById("red-score");
+const redHoney = document.getElementById("red-honey");
+const redPollen = document.getElementById("red-pollen");
+const redFrame = document.getElementById("red-frame");
 const redIcon = document.getElementById("red-icon");
+
+
 const blueDisplay = document.getElementById("blue-score");
 const blueIcon = document.getElementById("blue-icon");
+const bluePollen = document.getElementById("blue-pollen");
+const blueFrame = document.getElementById("blue-frame");
+const blueHoney = document.getElementById("blue-honey");
+
+const bluePenalties = document.getElementById("blue-penalties");
+const redPenalties = document.getElementById("red-penalties");
+
 const redReveal = document.getElementById("red-reveal");
 const blueReveal = document.getElementById("blue-reveal");
 const fileInput = document.getElementById("file-input");
@@ -13,16 +27,21 @@ const teleop = new Audio("./sounds/teleop.mp3");
 const end = new Audio("./sounds/endbuzzer.mp3");
 const endgame = new Audio("./sounds/whistle.mp3");
 
+var started = false;
+
 start.preload = "auto";
 end.preload = "auto";
 endgame.preload = "auto";
 teleop.preload = "auto";
 
-// seconds for timer
+let previousRedButtons = [];
+let previousBlueButtons = [];
+
+/** seconds for timer */
 var initialTime = 140;
 
-// rankings
-const teams = []
+/** rankings */
+const teams = [];
 
 /**
  * Times for the "teleop" and "endgame" sounds to play,
@@ -38,9 +57,9 @@ timeDisplay.innerHTML = formatDisplayTime(initialTime);
 var timePassed = 0;
 var timerInterval = null;
 
-var redTitle = document.createElement("span");
+const redTitle = document.createElement("span");
 redTitle.innerHTML = "Red";
-var blueTitle = document.createElement("span");
+const blueTitle = document.createElement("span");
 blueTitle.innerHTML = "Blue";
 
 redDisplay.appendChild(redTitle);
@@ -74,13 +93,16 @@ window.onload = function () {
       if (json.preload == true) {
         matchesJSON = json;
         loadMatch(matchNumber);
+        if (typeof createScoreboard === "function") { // fallback on external function
+          createScoreboard();
+        }
       }
     });
 };
 
 if (fileInput) {
   fileInput.onchange = function () {
-  var reader = new FileReader(); 
+  const reader = new FileReader(); 
   reader.readAsText(fileInput.files[0]);
 
   reader.onload = function () {
@@ -90,7 +112,9 @@ if (fileInput) {
       console.log("JSON successfully loaded into global variable matchesJSON:", matchesJSON);
       matchNumber = 1;
       loadMatch(matchNumber);
-      createScoreboard();
+      if (typeof createScoreboard === "function") {
+        createScoreboard();
+      } 
     } catch (error) {
        console.error(error);
        alert(error.message);
@@ -110,7 +134,6 @@ function ensureTeamDefaults() {
     }
   }
 }
-
 
 document.addEventListener("keyup", (event) => {
   if (event.key == "r" && timePassed == initialTime) {
@@ -137,6 +160,160 @@ document.addEventListener("keyup", (event) => {
   }
 });
 
+let gamepadLoopStarted = false;
+
+function startGamepadPolling() {
+  if (gamepadLoopStarted) return;
+
+  const pads = navigator.getGamepads();
+
+  if (pads[0]) {
+    console.log("Controller found:", pads[0].id);
+    gamepadLoopStarted = true;
+    pollGamepads();
+  }
+}
+
+const gamepadCheck = setInterval(() => {
+  startGamepadPolling();
+
+  if (gamepadLoopStarted) {
+    clearInterval(gamepadCheck);
+  }
+}, 500);
+
+
+document.addEventListener("gamepadconnected", (event) => {
+  console.log("Controller connected:", event.gamepad.id);
+  startGamepadPolling();
+});
+
+document.addEventListener("gamepaddisconnected", (event) => {
+  console.log("Gamepad disconnected:", event.gamepad.id);
+});
+
+
+function pollGamepads() {
+
+  console.log("polling");
+
+  const gamepads = navigator.getGamepads();
+  const redScoreController = navigator.getGamepads()[0];
+  const blueScoreController = navigator.getGamepads()[1];
+
+  if (started) {
+    if (redScoreController) {
+      redScoreController.buttons.forEach((button, index) => {
+        const wasPressed = previousRedButtons[index] || false;
+        if (button.pressed && !wasPressed) {
+          console.log("Button pressed:", index);
+          switch(index) {
+            case 0: // A
+              if (timePassed >= 110) {
+                points.red += 5;
+              }
+              break;
+            case 1: // B
+              if (timePassed >= 20) {
+                points.red += 3;
+              } else {
+                points.red += 7;
+              }
+              break;
+            case 2: // X
+              if (timePassed >= 20) {
+                points.red += 1;
+              } else {
+                points.red += 3;
+              }
+              break;
+            case 3: // Y
+              if (timePassed >= 20) {
+                points.red += 2;
+              } else {
+                points.red += 5;
+              }
+              break;
+            case 4: // LB
+              if (timePassed <= 20) {
+                points.red += 3;
+              }
+              break;
+            case 5: // RB
+              points.red += 5;
+              break;
+            case 8: // Back
+              console.log("Undo pressed");
+              break;
+            case 9: // Start
+              console.log("Redo pressed");
+              break;
+          }
+
+          updateScore(false, points.red);
+        }
+        previousRedButtons[index] = button.pressed;
+
+      });
+    }
+    if (blueScoreController) {
+      blueScoreController.buttons.forEach((button, index) => {
+        const wasPressed = previousBlueButtons[index] || false;
+        if (button.pressed && !wasPressed) {
+          console.log("Button pressed:", index);
+          switch(index) {
+            case 0: // A
+              if (timePassed >= 110) {
+                points.blue += 5;
+              }
+              break;
+            case 1: // B
+              if (timePassed >= 20) {
+                points.blue += 3;
+              } else {
+                points.blue += 7;
+              }
+              break;
+            case 2: // X
+              if (timePassed >= 20) {
+                points.blue += 1;
+              } else {
+                points.blue += 3;
+              }
+              break;
+            case 3: // Y
+              if (timePassed >= 20) {
+                points.blue += 2;
+              } else {
+                points.blue += 5;
+              }
+              break;
+            case 4: // LB
+              if (timePassed <= 20) {
+                points.blue += 3;
+              }
+              break;
+            case 5: // RB
+              points.blue += 5;
+              break;
+            case 8: // Back
+              console.log("Undo pressed");
+              break;
+            case 9: // Start
+              console.log("Redo pressed");
+              break;
+          }
+
+          updateScore(true, points.blue);
+        }
+        previousBlueButtons[index] = button.pressed;
+
+      });
+    }
+  }
+  requestAnimationFrame(pollGamepads);
+}
+
 function formatDisplayTime(time) {
   var minutes = Math.floor(time / 60);
   var seconds = time % 60;
@@ -148,63 +325,56 @@ function formatDisplayTime(time) {
   return minutes + ":" + seconds;
 }
 
-function updateDisplayTime() {
-  timeDisplay.innerHTML = formatDisplayTime(timeRemaining);
-  --timeRemaining;
-}
-
 function startTimer() {
-  if (timePassed == 0) {
-    start.play();
-  }
+
+  started = true;
+
+  if (!timeDisplay) {return;}
+  if (timePassed == 0) {start.play();}
 
   timeDisplay.classList = "timer-white";
 
-  if (timePassed != initialTime) {
-    if (timerInterval == null) {
+  if (timePassed == initialTime) {return;}
+  if (timerInterval) {return;}
+  timeDisplay.innerHTML = formatDisplayTime(initialTime - timePassed);
+  changeCirclePercent();
+  timerInterval = setInterval(() => {
+      timePassed += 1;
+
       timeDisplay.innerHTML = formatDisplayTime(initialTime - timePassed);
+
+      if (timePassed == initialTime) {stopTimer();}
+
       changeCirclePercent();
 
-      timerInterval = setInterval(() => {
-        timePassed += 1;
+      if (
+        BUZZER_TIMES.TELEOP &&
+        initialTime - timePassed == BUZZER_TIMES.TELEOP
+      ) {
+        teleop.play();
+      } else if (
+        BUZZER_TIMES.ENDGAME &&
+        initialTime - timePassed == BUZZER_TIMES.ENDGAME
+      ) {
+        endgame.play();
+      } else if (initialTime - timePassed == 0) {
+        end.play();
+      }
 
-        timeDisplay.innerHTML = formatDisplayTime(initialTime - timePassed);
-
-        if (timePassed == initialTime) {
-          stopTimer();
-        }
-
-        changeCirclePercent();
-
-        if (
-          BUZZER_TIMES.TELEOP != null &&
-          initialTime - timePassed == BUZZER_TIMES.TELEOP
-        ) {
-          teleop.play();
-        } else if (
-          BUZZER_TIMES.ENDGAME != null &&
-          initialTime - timePassed == BUZZER_TIMES.ENDGAME
-        ) {
-          endgame.play();
-        } else if (initialTime - timePassed == 0) {
-          end.play();
-        }
-
-        if (initialTime - timePassed <= 10) {
-          displayCircle.classList = "circle-red";
-          timeDisplay.classList.add("timer-end");
-          void timeDisplay.offsetWidth;
-        } else if (initialTime - timePassed <= 30) {
-          displayCircle.classList = "circle-orange";
-        } else {
-          displayCircle.classList = "circle-green";
-        }
-      }, 1000);
-    }
-  }
+      if (initialTime - timePassed <= 10) {
+        if (displayCircle) displayCircle.classList = "circle-red";
+        timeDisplay.classList.add("timer-end");
+        void timeDisplay.offsetWidth;
+      } else if (initialTime - timePassed <= 30) {
+        if (displayCircle) displayCircle.classList = "circle-orange";
+      } else {
+        if (displayCircle) displayCircle.classList = "circle-green";
+      }
+  }, 1000);
 }
 
 function stopTimer() {
+  started = false;
   clearInterval(timerInterval);
   timerInterval = null;
   if (!timeDisplay.classList.contains("timer-end")) {
@@ -215,11 +385,10 @@ function stopTimer() {
 }
 
 function settings() {
-  const url = "settings.html";
   const windowName = "MBSS-config";
   const windowFeatures = "width=500,height=600,resizable=yes,scrollbars=yes"; 
 
-  window.open(url, windowName, windowFeatures);
+  window.open("settings.html", windowName, windowFeatures);
 }
 
 function forceEnd() { // Force end used for debug and test purposes. 
@@ -228,9 +397,12 @@ function forceEnd() { // Force end used for debug and test purposes.
     timerInterval = null;
   }
   timePassed = initialTime; 
-  timeDisplay.innerHTML = formatDisplayTime(0); 
-  displayCircle.classList = "circle-red"; 
-  timeDisplay.classList.add("timer-end");
+  if (timeDisplay) {
+    timeDisplay.innerHTML = formatDisplayTime(0); 
+    timeDisplay.classList.add("timer-end");
+  }
+  if (displayCircle) displayCircle.classList = "circle-red"; 
+  started = false;
   end.play(); 
 }
 
@@ -271,21 +443,49 @@ function resetTimer() {
 
 function updateScore(isBlue, score) {
   if (isBlue) {
-    blueDisplay.innerHTML = "";
-    blueDisplay.appendChild(blueTitle);
-    blueDisplay.innerHTML += score;
+    if (blueDisplay) {
+      blueDisplay.innerHTML = "";
+      blueDisplay.appendChild(blueTitle);
+      blueDisplay.innerHTML += score;
+    }
   } else {
-    redDisplay.innerHTML = "";
-    redDisplay.appendChild(redTitle);
-    redDisplay.innerHTML += score;
+    if (redDisplay) {
+      redDisplay.innerHTML = "";
+      redDisplay.appendChild(redTitle);
+      redDisplay.innerHTML += score;
+    }
   }
 }
 
 function updatePenalties(isBlue, penalties) {
+  const elem = document.getElementById(
+    isBlue ? "blue-penalties" : "red-penalties"
+  );
+  if (elem) {elem.innerHTML = penalties};
   if (isBlue) {
-    document.getElementById("blue-penalties").innerHTML = penalties;
+    bluePenalties.innerHTML = penalties
   } else {
-    document.getElementById("red-penalties").innerHTML = penalties;
+    redPenalties.innerHTML = penalties
+  }
+}
+
+function updateGamePiece(isblue, piece, count) {
+  if (isBlue) {
+    if (piece == "pollen") {
+      bluePollen.innerHTML = count;
+    } else if (piece == "honey") {
+      blueHoney.innerHTML = count;
+    } else if (piece == "frame") {
+      blueFrame.innerHTML = count;
+    }
+  } else {
+    if (piece == "pollen") {
+      redPollen.innerHTML = count;
+    } else if (piece == "honey") {
+      redHoney.innerHTML = count;
+    } else if (piece == "frame") {
+      redFrame.innerHTML = count;
+    } 
   }
 }
 
@@ -325,31 +525,64 @@ function changeIcons() {
 }
 
 function toggleScores() {
+  if (!redReveal || !blueReveal) return;
+
+  const breakdownCard = document.getElementById("breakdown-card");
+
+  if (breakdownTimeout) {
+    clearTimeout(breakdownTimeout);
+    breakdownTimeout = null;
+  }
+
   if (redReveal.classList.contains("red-reveal-enter")) {
     blueReveal.classList.remove("blue-reveal-enter");
     redReveal.classList.remove("red-reveal-enter");
     blueReveal.classList.add("blue-reveal-exit");
     redReveal.classList.add("red-reveal-exit");
 
-    if (redReveal.children[0].id == "tied") {
+    if (breakdownCard) breakdownCard.classList.add("hidden");
+
+    if (redReveal.children[0] && redReveal.children[0].id == "tied") {
       redReveal.removeChild(redReveal.firstChild);
     }
   } else {
+    const finalPoints = {
+      red: points.red + penalties.blue,
+      blue: points.blue + penalties.red,
+    };
     // update scores in reveal divs
-        const redPtsElem = document.getElementById("red-reveal-points");
+    const redPtsElem = document.getElementById("red-reveal-points");
     const redPenElem = document.getElementById("red-reveal-penalties");
     const bluePtsElem = document.getElementById("blue-reveal-points");
     const bluePenElem = document.getElementById("blue-reveal-penalties");
+    
 
     if (redPtsElem) redPtsElem.innerHTML = points.red + penalties.blue;
     if (redPenElem) redPenElem.innerHTML = penalties.red;
     if (bluePtsElem) bluePtsElem.innerHTML = points.blue + penalties.red;
     if (bluePenElem) bluePenElem.innerHTML = penalties.blue;
 
+    const redBdScore = document.getElementById("red-breakdown-score");
+    const blueBdScore = document.getElementById("blue-breakdown-score");
+    const redBdPts = document.getElementById("red-breakdown-points");
+    const blueBdPts = document.getElementById("blue-breakdown-points");
+    const redBdPen = document.getElementById("red-breakdown-penalties");
+    const blueBdPen = document.getElementById("blue-breakdown-penalties");
+
+    if (redBdScore) redBdScore.innerText = finalPoints.red;
+    if (blueBdScore) blueBdScore.innerText = finalPoints.blue;
+    if (redBdPts) redBdPts.innerText = points.red;
+    if (blueBdPts) blueBdPts.innerText = points.blue;
+    if (redBdPen) redBdPen.innerText = penalties.red;
+    if (blueBdPen) blueBdPen.innerText = penalties.blue;
+
     const winnerDiv = document.createElement("div");
 
     winnerDiv.id = "winner";
-    winnerDiv.innerHTML = "Winner!";
+    winnerDiv.innerHTML = `
+   <img src="images/troph.svg" class="winner-icon" alt="Winner Icon" />
+    <span>Winner!</span>
+    `;
 
     if (redReveal.children.length == 2) {
       redReveal.removeChild(redReveal.firstChild);
@@ -360,7 +593,6 @@ function toggleScores() {
     }
 
     var winner = "";
-    const finalPoints = {red:points.red + penalties.blue,blue:points.blue + penalties.red};
 
     // Winner logic
     if (finalPoints.red > finalPoints.blue) {
@@ -413,7 +645,6 @@ function toggleScores() {
 
       if (typeof updateTeamScores === "function") {
         updateTeamScores();
-        }
       }
     }
 
@@ -421,6 +652,12 @@ function toggleScores() {
     redReveal.classList.remove("red-reveal-exit");
     blueReveal.classList.add("blue-reveal-enter");
     redReveal.classList.add("red-reveal-enter");
+
+    if (breakdownCard) {
+      breakdownTimeout = setTimeout(() => {
+        breakdownCard.classList.remove("hidden");
+      }, 1900);
+    }
   }
 }
 
@@ -454,26 +691,26 @@ function loadMatch(number) {
     .getElementById("match-selector")
     .classList.replace("no-matches", "matches");
 
-  if (!matchesJSON) return;
+  if (matchesJSON == null) return;
 
   const totalMatches = Object.keys(matchesJSON).filter((k) => /^m\d+$/.test(k)).length;
   matchNumber = Math.max(Math.min(totalMatches, number), 1);
 
   const currentMatch = matchesJSON["m" + matchNumber];
-  if (!currentMatch) return;
+  if (!currentMatch) {return;}
 
-    const redRevealName = document.getElementById("red-reveal-name");
-    const blueRevealName = document.getElementById("blue-reveal-name");
+  const redRevealName = document.getElementById("red-reveal-name");
+  const blueRevealName = document.getElementById("blue-reveal-name");
 
-    if (matchesJSON.bracket === true || currentMatch.red !== undefined) {
-      const red = findTeamName(currentMatch.red);
-      const blue = findTeamName(currentMatch.blue);
+  if (matchesJSON.bracket === true || currentMatch.red !== undefined) {
+    const red = findTeamName(currentMatch.red);
+    const blue = findTeamName(currentMatch.blue);
 
 
-      redTitle.innerHTML = red;
-      blueTitle.innerHTML = blue;
+    redTitle.innerHTML = red;
+    blueTitle.innerHTML = blue;
 
-      if (redRevealName) redRevealName.innerHTML = red;
+    if (redRevealName) redRevealName.innerHTML = red;
     if (blueRevealName) blueRevealName.innerHTML = blue;
   } else {
     red = findTeamName(matchesJSON["m" + matchNumber].red);
@@ -499,9 +736,7 @@ function loadMatch(number) {
 }
 
 function findTeamName(info) {
-  if (info == null) {
-    return "";
-  }
+  if (info == null) return "";
   if (info.toUpperCase().match(/(WINNER|LOSER) OF M\d+/g)) {
     match = matchesJSON[info.match(/m\d+/)];
     // Find team based on what the info says, if winner then use the
