@@ -1,3 +1,4 @@
+let breakdownTimeout = null;
 const timeDisplay = document.getElementById("timer-display");
 const displayCircle = document.getElementById("timer-circle");
 const redDisplay = document.getElementById("red-score");
@@ -336,26 +337,54 @@ function changeIcons() {
 function toggleScores() {
   if (!redReveal || !blueReveal) return;
 
+  const breakdownCard = document.getElementById("breakdown-card");
+
+  if (breakdownTimeout) {
+    clearTimeout(breakdownTimeout);
+    breakdownTimeout = null;
+  }
+
   if (redReveal.classList.contains("red-reveal-enter")) {
     blueReveal.classList.remove("blue-reveal-enter");
     redReveal.classList.remove("red-reveal-enter");
     blueReveal.classList.add("blue-reveal-exit");
     redReveal.classList.add("red-reveal-exit");
 
+    if (breakdownCard) breakdownCard.classList.add("hidden");
+
     if (redReveal.children[0] && redReveal.children[0].id == "tied") {
       redReveal.removeChild(redReveal.firstChild);
     }
   } else {
+    const finalPoints = {
+      red: points.red + penalties.blue,
+      blue: points.blue + penalties.red,
+    };
     // update scores in reveal divs
     const redPtsElem = document.getElementById("red-reveal-points");
     const redPenElem = document.getElementById("red-reveal-penalties");
     const bluePtsElem = document.getElementById("blue-reveal-points");
     const bluePenElem = document.getElementById("blue-reveal-penalties");
+    
 
     if (redPtsElem) redPtsElem.innerHTML = points.red + penalties.blue;
     if (redPenElem) redPenElem.innerHTML = penalties.red;
     if (bluePtsElem) bluePtsElem.innerHTML = points.blue + penalties.red;
     if (bluePenElem) bluePenElem.innerHTML = penalties.blue;
+
+    const redBdScore = document.getElementById("red-breakdown-score");
+    const blueBdScore = document.getElementById("blue-breakdown-score");
+    const redBdPts = document.getElementById("red-breakdown-points");
+    const blueBdPts = document.getElementById("blue-breakdown-points");
+    const redBdPen = document.getElementById("red-breakdown-penalties");
+    const blueBdPen = document.getElementById("blue-breakdown-penalties");
+
+    if (redBdScore) redBdScore.innerText = finalPoints.red;
+    if (blueBdScore) blueBdScore.innerText = finalPoints.blue;
+    if (redBdPts) redBdPts.innerText = points.red;
+    if (blueBdPts) blueBdPts.innerText = points.blue;
+    if (redBdPen) redBdPen.innerText = penalties.red;
+    if (blueBdPen) blueBdPen.innerText = penalties.blue;
 
     const winnerDiv = document.createElement("div");
 
@@ -371,7 +400,6 @@ function toggleScores() {
     }
 
     var winner = "";
-    const finalPoints = {red:points.red + penalties.blue,blue:points.blue + penalties.red};
 
     // Winner logic
     if (finalPoints.red > finalPoints.blue) {
@@ -431,6 +459,12 @@ function toggleScores() {
     redReveal.classList.remove("red-reveal-exit");
     blueReveal.classList.add("blue-reveal-enter");
     redReveal.classList.add("red-reveal-enter");
+
+    if (breakdownCard) {
+      breakdownTimeout = setTimeout(() => {
+        breakdownCard.classList.remove("hidden");
+      }, 1900);
+    }
   }
 }
 

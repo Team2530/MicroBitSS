@@ -165,7 +165,7 @@ span {
 }
 
 .red-score-enter {
-  left: 10px;
+  left: 0px;
 }
 
 .red-score-exit {
@@ -209,6 +209,66 @@ span {
   transition: 3s ease;
 }
 
+.breakdown-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 620px;
+  height: 465px;
+  background-color: #e6e6e6;
+  color: #222;
+  border-radius: 8px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 5;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  transition: opacity 0.8s ease;
+}
+
+.breakdown-card.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.breakdown-section-title {
+  background-color: #cccccc;
+  text-align: center;
+  font-weight: bold;
+  font-size: 25px;
+  padding: 4px 0;
+  letter-spacing: 1px;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.breakdown-row.header {
+  background-color: #ffffff;
+  border-bottom: 2px solid #ccc;
+  font-size: 32px;
+}
+
+.breakdown-title {
+  font-size: 40px;
+  color: #000000;
+  text-align: center;
+  letter-spacing: 2;
+}
+
+.breakdown-row .label {
+  font-size: 30px;
+  color: #444;
+  font-weight: normal;
+  text-align: center;
+}
+
 #red-reveal {
   background-color: #ed1c24;
 }
@@ -250,19 +310,87 @@ span {
 
 .reveal-score {
   position: relative;
-  top: 150px;
+  top: 115px;
+  bottom: 40px;
   max-width: 100%;
   text-wrap: wrap;
   justify-content: center;
   align-content: center;
   text-align: center;
+  align-items: center;
+  
+}
+
+#red-reveal .reveal-score {
+  right: 70px;         /* Anchors the score to the right side of the red panel */
+  text-align: right;
+  align-items: flex-end;
+}
+
+#blue-reveal .reveal-score {
+  left: 70px;
+  text-align: left;
+  align-items: flex-end;
+}
+
+#red-reveal-name,
+.alliance-name {
+  position: absolute;
+  bottom: -730px;
+  left: 55%;
+  transform: translateX(-50%); /* Centers the box perfectly horizontal */
+  
+  /* Box Styling */
+  background-color: rgb(236, 0, 0); /* Semi-transparent dark box background */
+  border: 0px solid rgba(255, 255, 255, 0.8); /* Subtle white border */
+  border-radius: 0px;                         /* Rounded corners */
+  padding: 10px 24px;                        /* Spacing inside the box around text */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Subtle drop shadow for depth */
+
+  /* Text Styling */
+  color: #ffffff;
+  font-size: 80px;
+  font-weight: bold;
+  text-transform: uppercase;
+  white-space: nowrap;                       /* Prevents names from wrapping to a 2nd line */
+  z-index: 3;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  align-items: center;
+}
+#blue-reveal-name,
+.alliance-name {
+  position: absolute;
+  bottom: -730px;
+  left: 45%;
+  transform: translateX(-50%); /* Centers the box perfectly horizontal */
+  
+  /* Box Styling */
+  background-color: rgb(0, 0, 159); /* Semi-transparent dark box background */
+  border: 0px solid rgba(255, 255, 255, 0.8); /* Subtle white border */
+  border-radius: 0px;                         /* Rounded corners */
+  padding: 10px 24px;                        /* Spacing inside the box around text */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Subtle drop shadow for depth */
+
+  /* Text Styling */
+  color: #ffffff;
+  font-size: 80px;
+  font-weight: bold;
+  text-transform: uppercase;
+  white-space: nowrap;                       /* Prevents names from wrapping to a 2nd line */
+  z-index: 3;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  align-items: center;
 }
 
 #winner {
   position: absolute;
-  height: 150px;
-  line-height: 150px;
-  font-size: 150px;
+  height: 120px;
+  line-height: 130px;
+  font-size: 120px;
   width: 100%;
   background-color: #e2e22a;
   color: black;
@@ -309,6 +437,7 @@ span {
   text-align: center;
   display: flex;
   flex-direction: column;
+  z-index: 100;
   transition: 1.2s ease-in-out;
 
   text-align: center;
