@@ -31,6 +31,9 @@ end.preload = "auto";
 endgame.preload = "auto";
 teleop.preload = "auto";
 
+let previousRedButtons = [];
+let previousBlueButtons = [];
+
 /** seconds for timer */
 var initialTime = 140;
 
@@ -157,61 +160,157 @@ document.addEventListener("keyup", (event) => {
   }
 });
 
-window.addEventListener("gamepadconnected", (event) => {
+let gamepadLoopStarted = false;
+
+function startGamepadPolling() {
+  if (gamepadLoopStarted) return;
+
+  const pads = navigator.getGamepads();
+
+  if (pads[0]) {
+    console.log("Controller found:", pads[0].id);
+    gamepadLoopStarted = true;
+    pollGamepads();
+  }
+}
+
+const gamepadCheck = setInterval(() => {
+  startGamepadPolling();
+
+  if (gamepadLoopStarted) {
+    clearInterval(gamepadCheck);
+  }
+}, 500);
+
+
+document.addEventListener("gamepadconnected", (event) => {
   console.log("Controller connected:", event.gamepad.id);
-  gamepadIndex = event.gamepad.index;
-  pollGamepad();
+  startGamepadPolling();
 });
 
-window.addEventListener("gamepaddisconnected", (event) => {
+document.addEventListener("gamepaddisconnected", (event) => {
   console.log("Gamepad disconnected:", event.gamepad.id);
 });
 
-function pollGamepads() {
-  const gamepads = navigator.getGamepads();
-  const redScoreController = gamepads[0]; 
-  const blueScoreController = gamepads[1]; 
-  if (redScoreController) {
-    if (redScoreController.buttons[0].pressed) { // A, Pollen
-      if (timePassed <= BUZZER_TIMES.ENDGAME){
-        updateScore(5);
-      }
-    }
-    if (redScoreController.buttons[1].pressed) { // B, L3
-      if (timePassed <= BUZZER_TIMES.TELEOP){
-        updateScore(3);
-      }else{
-        updateScore(7);
-      }
-    }
-    if (redScoreController.buttons[2].pressed) { // X L1
-      if (timePassed <= BUZZER_TIMES.TELEOP){
-        updateScore(1);
-      }else{
-        updateScore(3);
-      }
-    }
-    if (redScoreController.buttons[3].pressed) { // Y L2
-      if (timePassed <= BUZZER_TIMES.TELEOP){
-        updateScore(2);
-      }else{
-        updateScore(5);
-      }
-    }
-    if (redScoreController.buttons[4].pressed) { // Left Bumper Leave
-      if (timePassed >= BUZZER_TIMES.TELEOP){
-        updateScore(3);
-      }
-    }
-    if (redScoreController.buttons[5].pressed) { // Right Bumper Frame
-      updateScore(5)
-    }
-    if (redScoreController.buttons[8].pressed) { //Back Button Undo
-    }
-    if (redScoreController.buttons[9].pressed) { //Forward Button Redo
-    } 
-  }
 
+function pollGamepads() {
+
+  console.log("polling");
+
+  const gamepads = navigator.getGamepads();
+  const redScoreController = navigator.getGamepads()[0];
+  const blueScoreController = navigator.getGamepads()[1];
+
+  if (timePassed >= 0) {
+    if (redScoreController) {
+      redScoreController.buttons.forEach((button, index) => {
+        const wasPressed = previousRedButtons[index] || false;
+        if (button.pressed && !wasPressed) {
+          console.log("Button pressed:", index);
+          switch(index) {
+            case 0: // A
+              if (timePassed >= BUZZER_TIMES.ENDGAME) {
+                points.red += 5;
+              }
+              break;
+            case 1: // B
+              if (timePassed <= BUZZER_TIMES.TELEOP) {
+                points.red += 3;
+              } else {
+                points.red += 7;
+              }
+              break;
+            case 2: // X
+              if (timePassed <= BUZZER_TIMES.TELEOP) {
+                points.red += 1;
+              } else {
+                points.red += 3;
+              }
+              break;
+            case 3: // Y
+              if (timePassed <= BUZZER_TIMES.TELEOP) {
+                points.red += 2;
+              } else {
+                points.red += 5;
+              }
+              break;
+            case 4: // LB
+              if (timePassed >= BUZZER_TIMES.TELEOP) {
+                points.red += 3;
+              }
+              break;
+            case 5: // RB
+              points.red += 5;
+              break;
+            case 8: // Back
+              console.log("Undo pressed");
+              break;
+            case 9: // Start
+              console.log("Redo pressed");
+              break;
+          }
+
+          updateScore(false, points.red);
+        }
+        previousRedButtons[index] = button.pressed;
+
+      });
+    }
+    if (blueScoreController) {
+      blueScoreController.buttons.forEach((button, index) => {
+        const wasPressed = previousBlueButtons[index] || false;
+        if (button.pressed && !wasPressed) {
+          console.log("Button pressed:", index);
+          switch(index) {
+            case 0: // A
+              if (timePassed <= BUZZER_TIMES.ENDGAME) {
+                points.blue += 5;
+              }
+              break;
+            case 1: // B
+              if (timePassed <= BUZZER_TIMES.TELEOP) {
+                points.blue += 3;
+              } else {
+                points.blue += 7;
+              }
+              break;
+            case 2: // X
+              if (timePassed <= BUZZER_TIMES.TELEOP) {
+                points.blue += 1;
+              } else {
+                points.blue += 3;
+              }
+              break;
+            case 3: // Y
+              if (timePassed <= BUZZER_TIMES.TELEOP) {
+                points.blue += 2;
+              } else {
+                points.blue += 5;
+              }
+              break;
+            case 4: // LB
+              if (timePassed >= BUZZER_TIMES.TELEOP) {
+                points.blue += 3;
+              }
+              break;
+            case 5: // RB
+              points.blue += 5;
+              break;
+            case 8: // Back
+              console.log("Undo pressed");
+              break;
+            case 9: // Start
+              console.log("Redo pressed");
+              break;
+          }
+
+          updateScore(true, points.blue);
+        }
+        previousBlueButtons[index] = button.pressed;
+
+      });
+    }
+  }
   requestAnimationFrame(pollGamepads);
 }
 
