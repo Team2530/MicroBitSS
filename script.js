@@ -439,6 +439,7 @@ function forceEnd() { // Force end used for debug and test purposes.
     timeDisplay.classList.add("timer-end");
   }
   if (displayCircle) displayCircle.classList = "circle-red"; 
+  displayCircle.setAttributeNS(null, "stroke-dasharray", "0 628");
   started = false;
   end.play(); 
 }
