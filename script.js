@@ -209,33 +209,33 @@ function pollGamepads() {
           console.log("Button pressed:", index);
           switch(index) {
             case 0: // A
-              if (timePassed >= BUZZER_TIMES.ENDGAME) {
+              if (timePassed >= 110) {
                 points.red += 5;
               }
               break;
             case 1: // B
-              if (timePassed <= BUZZER_TIMES.TELEOP) {
+              if (timePassed >= 20) {
                 points.red += 3;
               } else {
                 points.red += 7;
               }
               break;
             case 2: // X
-              if (timePassed <= BUZZER_TIMES.TELEOP) {
+              if (timePassed >= 20) {
                 points.red += 1;
               } else {
                 points.red += 3;
               }
               break;
             case 3: // Y
-              if (timePassed <= BUZZER_TIMES.TELEOP) {
+              if (timePassed >= 20) {
                 points.red += 2;
               } else {
                 points.red += 5;
               }
               break;
             case 4: // LB
-              if (timePassed >= BUZZER_TIMES.TELEOP) {
+              if (timePassed <= 20) {
                 points.red += 3;
               }
               break;
@@ -263,33 +263,33 @@ function pollGamepads() {
           console.log("Button pressed:", index);
           switch(index) {
             case 0: // A
-              if (timePassed <= BUZZER_TIMES.ENDGAME) {
+              if (timePassed >= 110) {
                 points.blue += 5;
               }
               break;
             case 1: // B
-              if (timePassed <= BUZZER_TIMES.TELEOP) {
+              if (timePassed >= 20) {
                 points.blue += 3;
               } else {
                 points.blue += 7;
               }
               break;
             case 2: // X
-              if (timePassed <= BUZZER_TIMES.TELEOP) {
+              if (timePassed >= 20) {
                 points.blue += 1;
               } else {
                 points.blue += 3;
               }
               break;
             case 3: // Y
-              if (timePassed <= BUZZER_TIMES.TELEOP) {
+              if (timePassed >= 20) {
                 points.blue += 2;
               } else {
                 points.blue += 5;
               }
               break;
             case 4: // LB
-              if (timePassed >= BUZZER_TIMES.TELEOP) {
+              if (timePassed <= 20) {
                 points.blue += 3;
               }
               break;
