@@ -389,7 +389,10 @@ function toggleScores() {
     const winnerDiv = document.createElement("div");
 
     winnerDiv.id = "winner";
-    winnerDiv.innerHTML = "Winner!";
+    winnerDiv.innerHTML = `
+   <img src="images/troph.svg" class="winner-icon" alt="Winner Icon" />
+    <span>Winner!</span>
+    `;
 
     if (redReveal.children.length == 2) {
       redReveal.removeChild(redReveal.firstChild);

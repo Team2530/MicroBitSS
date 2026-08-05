@@ -389,14 +389,28 @@ span {
 #winner {
   position: absolute;
   height: 120px;
-  line-height: 130px;
-  font-size: 120px;
   width: 100%;
   background-color: #e2e22a;
   color: black;
-  text-align: center;
+
+  /* Centers the SVG icon and text next to each other */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;                     /* Distance between icon and text */
+
+  font-size: 100px;
+  font-weight: bold;
   text-shadow: 0px 0px 200px white;
   border-radius: 0px 0px 8px 8px;
+  z-index: 10;
+}
+
+/* Controls icon sizing inside the banner */
+.winner-icon {
+  height: 90px;                  /* Proportional height to fit inside 150px banner */
+  width: auto;
+  filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.2));
 }
 
 #tied {
