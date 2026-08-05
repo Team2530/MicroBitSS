@@ -154,28 +154,42 @@ function pollGamepads() {
   const blueScoreController = gamepads[1]; 
   if (redScoreController) {
     if (redScoreController.buttons[0].pressed) { // A, Pollen
-      updateScore(false, points.red + 5);
+      if (timePassed <= BUZZER_TIMES.ENDGAME){
+        updateScore(5);
+      }
     }
-    if (redScoreController.buttons[1].pressed) {
-      console.log("B button pressed");
+    if (redScoreController.buttons[1].pressed) { // B, L3
+      if (timePassed <= BUZZER_TIMES.TELEOP){
+        updateScore(3);
+      }else{
+        updateScore(7);
+      }
     }
-    if (redScoreController.buttons[2].pressed) {
-      console.log("X button pressed");
+    if (redScoreController.buttons[2].pressed) { // X L1
+      if (timePassed <= BUZZER_TIMES.TELEOP){
+        updateScore(1);
+      }else{
+        updateScore(3);
+      }
     }
-    if (redScoreController.buttons[3].pressed) {
-      console.log("Y button pressed");
+    if (redScoreController.buttons[3].pressed) { // Y L2
+      if (timePassed <= BUZZER_TIMES.TELEOP){
+        updateScore(2);
+      }else{
+        updateScore(5);
+      }
     }
-    if (redScoreController.buttons[4].pressed) {
-      console.log("Left bumper pressed");
+    if (redScoreController.buttons[4].pressed) { // Left Bumper Leave
+      if (timePassed >= BUZZER_TIMES.TELEOP){
+        updateScore(3);
+      }
     }
-    if (redScoreController.buttons[5].pressed) {
-      console.log("Right bumper pressed");
+    if (redScoreController.buttons[5].pressed) { // Right Bumper Frame
+      updateScore(5)
     }
-    if (redScoreController.buttons[8].pressed) {
-      console.log("Back button pressed");
+    if (redScoreController.buttons[8].pressed) { //Back Button Undo
     }
-    if (redScoreController.buttons[9].pressed) {
-      console.log("Forward button pressed");
+    if (redScoreController.buttons[9].pressed) { //Forward Button Redo
     } 
   }
 
@@ -316,25 +330,17 @@ function resetTimer() {
 
 function updateScore(isBlue, score) {
   if (isBlue) {
-    blueDisplay.innerHTML = "";
-    blueDisplay.appendChild(blueTitle);
-    blueDisplay.innerHTML += score;
+    blueDisplay.innerHTML = score;
   } else {
-    redDisplay.innerHTML = "";
-    redDisplay.appendChild(redTitle);
-    redDisplay.innerHTML += score;
+    redDisplay.innerHTML = score;
   }
 }
 
 function updatePenalties(isBlue, penalties) {
   if (isBlue) {
-    bluePenalties.innerHTML = "";
-    bluePenalties.appendChild(blueTitle);
-    bluePenalties.innerHTML += score;
+    bluePenalties.innerHTML = penalties
   } else {
-    redPenalties.innerHTML = "";
-    redPenalties.appendChild(redTitle);
-    redPenalties.innerHTML += score;
+    redPenalties.innerHTML = penalties
   }
 }
 
@@ -354,7 +360,7 @@ function updateGamePiece(isblue, piece, count) {
       redHoney.innerHTML = count;
     } else if (piece == "frame") {
       redFrame.innerHTML = count;
-    }
+    } 
   }
 }
 
