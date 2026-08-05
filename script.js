@@ -85,12 +85,12 @@ var pieceCounts = {
 
 
 const resetAllPoints = () => {points = {red:0, blue:0};penalties = {red:0, blue:0};
-  pieceCounts = { red: { pollen: 0, honey: 0, frame: 0, leave: 0 }},
-  pieceCounts = { blue: { pollen: 0, honey: 0, frame: 0, leave: 0 }}
+pieceCounts = {red: {pollen:0, honey:0, frame:0, leave:0}};
+pieceCounts = {blue: {pollen:0, honey:0, frame:0, leave:0}}
 };
 ["red", "blue"].forEach((alliance) => {
   ["pollen", "honey", "frame", "leave"].forEach((piece) => {
-    const elm = document.getElementById(`${alliane}-${piece}`);
+    const elm = document.getElementById(`${alliance}-${piece}`);
     if (elm) elm.innerHTML = "0";
     });
   });
