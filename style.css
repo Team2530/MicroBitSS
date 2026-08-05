@@ -180,6 +180,19 @@ span {
   font-size: 40px;
 }
 
+.red-tracker {
+  position: absolute;
+  left: 20px; 
+  top: 320px;  
+}
+
+.blue-tracker {
+  position: absolute;
+  right: 20px; 
+  top: 320px;  
+}
+
+
 #red-penalties {
   left: 15px;
 }
@@ -198,6 +211,58 @@ span {
 
 .circle-green {
   stroke: #56ea16;
+}
+
+.game-piece-tracker {
+  position: absolute;
+  top: 130px;
+  width: 420px;
+  border-radius: 10px;
+  padding: 20px;
+  color: white;
+  font-family: monospace;
+  box-sizing: border-box;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.red-tracker {
+  left: 20px;
+  border: 2px solid #ff4d4d;
+  background: rgba(214, 0, 0, 0.348);
+}
+
+.blue-tracker {
+  right: 20px;
+  border: 2px solid #4d94ff;
+  background: rgba(0, 26, 255, 0.348);
+}
+
+.tracker title {
+  font-size: 20px; 
+  font-weight: bold;
+  text-align: center; 
+  margin-bottom: 8px;
+  color: #ddd;
+  border-bottom: 1px solid #555;
+  padding-bottom: 4px;
+}
+
+.piece-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 30px;
+  margin: 4px 0;
+}
+
+.red-tracker .piece-row span:last-child {
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+.blue-tracker .piece-row span:last-child {
+  color: #4d94ff;
+  font-weight: bold;
 }
 
 .reveal {

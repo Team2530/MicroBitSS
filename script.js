@@ -77,7 +77,24 @@ var matchNumber = 1;
 // Red, blue
 var points = {red:0, blue:0};
 var penalties = {red:0, blue:0};
-const resetAllPoints = () => {points = {red:0, blue:0};penalties = {red:0, blue:0};}
+
+var pieceCounts = {
+  red: { pollen: 0, honey: 0, frame: 0, leave: 0 },
+  blue: { pollen: 0, honey: 0, frame: 0, leave: 0 }
+};
+
+
+const resetAllPoints = () => {points = {red:0, blue:0};penalties = {red:0, blue:0};
+  pieceCounts = { red: { pollen: 0, honey: 0, frame: 0, leave: 0 }},
+  pieceCounts = { blue: { pollen: 0, honey: 0, frame: 0, leave: 0 }}
+};
+["red", "blue"].forEach((alliance) => {
+  ["pollen", "honey", "frame", "leave"].forEach((piece) => {
+    const elm = document.getElementById(`${alliane}-${piece}`);
+    if (elm) elm.innerHTML = "0";
+    });
+  });
+;
 
 const KEYMAP = [
   ["s", "red", 1],
@@ -512,28 +529,16 @@ function updatePenalties(isBlue, penalties) {
 }
 
 function updateGamePiece(isblue, piece, count) {
-  // if (isblue) {
-  //   if (piece == "pollen") {
-  //     bluePollen.innerHTML = count;
-  //   } else if (piece == "honey") {
-  //     blueHoney.innerHTML = count;
-  //   } else if (piece == "frame") {
-  //     blueFrame.innerHTML = count;
-  //   } else if (piece == "leave") {
-  //     blueLeave.innerHTML = count;
-  //   }
-  // } else {
-  //   if (piece == "pollen") {
-  //     redPollen.innerHTML = count;
-  //   } else if (piece == "honey") {
-  //     redHoney.innerHTML = count;
-  //   } else if (piece == "frame") {
-  //     redFrame.innerHTML = count;
-  //   } else if (piece == "leave") {
-  //     blueLeave.innerHTML = count;
-  //   }
-  // }
-  console.log(`Increased ${isblue ? "blue" : "red"} ${piece} by ${count}`);
+const alliance = isBlue ? "blue" : "red";
+if (peiceCounts[alliance][piece] !== undefined) {
+  pieceCounts[alliance][piece] += count;
+  }
+
+const elm = document.getElementById(`${alliance}-${peice}`);
+if (elm) {
+  elm.innerHTML = pieceCounts [alliance][peice];
+}
+  console.log(`Increased ${alliance} ${piece} by ${count}`);
 }
 
 function toggleTeams(resetScores, toggleIcons) {
