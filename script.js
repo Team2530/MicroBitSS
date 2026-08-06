@@ -83,18 +83,32 @@ var pieceCounts = {
   blue: { pollen: 0, honey: 0, frame: 0, leave: 0 }
 };
 
+var pieceScores = {
+  red: { pollen: 0, honey: 0, frame: 0, leave: 0 },
+  blue: { pollen: 0, honey: 0, frame: 0, leave: 0 }
+};
+
 
 const resetAllPoints = () => {points = {red:0, blue:0};penalties = {red:0, blue:0};
-pieceCounts = {red: {pollen:0, honey:0, frame:0, leave:0}};
-pieceCounts = {blue: {pollen:0, honey:0, frame:0, leave:0}}
-};
-["red", "blue"].forEach((alliance) => {
-  ["pollen", "honey", "frame", "leave"].forEach((piece) => {
-    const elm = document.getElementById(`${alliance}-${piece}`);
-    if (elm) elm.innerHTML = "0";
-    });
+  pieceCounts = {
+    red: { pollen: 0, honey: 0, frame: 0, leave: 0 },
+    blue: { pollen: 0, honey: 0, frame: 0, leave: 0 }
+  };
+  pieceScores = {
+    red: { pollen: 0, honey: 0, frame: 0, leave: 0 },
+    blue: { pollen: 0, honey: 0, frame: 0, leave: 0 }
+  };
+
+  ["red", "blue"].forEach((alliance) => {
+    ["pollen", "honey", "frame", "leave"].forEach((piece) => {
+      const elm = document.getElementById(`${alliance}-${piece}`);
+      if (elm) elm.innerHTML = "0";
+      });
   });
-;
+};
+
+
+
 
 const KEYMAP = [
   ["s", "red", 1],
@@ -530,15 +544,16 @@ function updatePenalties(isBlue, penalties) {
 }
 
 function updateGamePiece(isBlue, piece, count) {
-const alliance = isBlue ? "blue" : "red";
-if (pieceCounts[alliance][piece] !== undefined) {
-  pieceCounts[alliance][piece] += count;
+  const alliance = isBlue ? "blue" : "red";
+  if (pieceCounts[alliance][piece] !== undefined) {
+    pieceCounts[alliance][piece] += count;
   }
 
-const elm = document.getElementById(`${alliance}-${piece}`);
-if (elm) {
-  elm.innerHTML = pieceCounts [alliance][piece];
-}
+  const elm = document.getElementById(`${alliance}-${piece}`);
+  if (elm) {
+    elm.innerHTML = pieceCounts [alliance][piece];
+  }
+
   console.log(`Increased ${alliance} ${piece} by ${count}`);
 }
 
@@ -718,7 +733,45 @@ function toggleScores() {
       }, 1900);
     }
   }
+  // match breakdown
+
+  // calculate scores based on piece counts
+  for (const alliance in pieceCounts) {
+    for (const piece in pieceCounts[alliance]) {
+        switch(piece) {
+          case "pollen":
+            pieceScores[alliance][piece] = pieceCounts[alliance][piece] * 5
+            break;
+          case "frame":
+            pieceScores[alliance][piece] = pieceCounts[alliance][piece] * 5
+            break;
+          case "leave":
+            pieceScores[alliance][piece] = pieceCounts[alliance][piece] * 3
+            break;
+          case "honey":
+            pieceScores[alliance][piece] = points[alliance] 
+              - (pieceCounts[alliance]["pollen"] * 5)
+              - (pieceCounts[alliance]["frame"] * 5)
+              - (pieceCounts[alliance]["leave"] * 3)
+        }
+    }
+  }
+
+  // display scores in breakdown
+  console.log(pieceCounts)
+  console.log(pieceScores)
+
+  for (const alliance in pieceScores) {
+    for (const piece in pieceScores[alliance]) {
+      const elem = document.getElementById(`${alliance}-${piece}-points`);
+      if (elem) {
+        elem.innerHTML = pieceScores[alliance][piece]; 
+      }
+    }
+  } 
 }
+
+
 
 function getTeamName(id) {
   if (id == null) return "Team Default";
