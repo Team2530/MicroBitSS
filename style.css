@@ -232,7 +232,6 @@ span {
   box-sizing: border-box;
   font-size: 20px;
   font-weight: bold;
-  z-index: 4;
   box-sizing: border-box;
 }
 
@@ -282,15 +281,16 @@ span {
   top: 0px;
   margin: 0;
   transition: 3s ease;
+  font-size: 100px;
 }
 
 .breakdown-card {
   position: absolute;
-  top: 55%;
+  top: 60vh;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 720px;
-  height: 565px;
+  width: clamp(720px, 50vw, 1000px);
+  height: clamp(450px, 50vh, 1000px);
   background-color: #e6e6e6;
   color: #222;
   border-radius: 8px;
@@ -371,7 +371,7 @@ span {
 
 .points {
   color: white;
-  font-size: 200px;
+  font-size: 150px;
 }
 
 .penalties {
@@ -394,7 +394,6 @@ span {
   align-content: center;
   text-align: center;
   align-items: center;
-  
 }
 
 #red-reveal .reveal-score {
@@ -412,7 +411,7 @@ span {
 #red-reveal-name,
 .alliance-name {
   position: absolute;
-  bottom: -730px;
+  bottom: -550px;
   left: 55%;
   transform: translateX(-50%); /* Centers the box perfectly horizontal */
   
@@ -425,7 +424,7 @@ span {
 
   /* Text Styling */
   color: #ffffff;
-  font-size: 80px;
+  font-size: 60px;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;                       /* Prevents names from wrapping to a 2nd line */
@@ -438,7 +437,7 @@ span {
 #blue-reveal-name,
 .alliance-name {
   position: absolute;
-  bottom: -730px;
+  bottom: -550px;
   left: 45%;
   transform: translateX(-50%); /* Centers the box perfectly horizontal */
   
@@ -451,7 +450,7 @@ span {
 
   /* Text Styling */
   color: #ffffff;
-  font-size: 80px;
+  font-size: 60px;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;                       /* Prevents names from wrapping to a 2nd line */
