@@ -2,6 +2,13 @@ body {
   overflow: hidden;
 }
 
+html, body {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 div,
 span {
   user-select: none;
@@ -214,16 +221,19 @@ span {
 }
 
 .game-piece-tracker {
-  position: absolute;
-  top: 130px;
-  width: 420px;
+  position: fixed;
+  top: 70vh;
+  bottom: 20px;
+  width: clamp(150px, 26vw, 800px);
   border-radius: 10px;
-  padding: 20px;
+  padding: clamp(8px, 1vw, 20px);
   color: white;
   font-family: monospace;
   box-sizing: border-box;
   font-size: 20px;
   font-weight: bold;
+  z-index: 4;
+  box-sizing: border-box;
 }
 
 .red-tracker {
@@ -624,4 +634,21 @@ td {
 
 .hidden {
   opacity: 0%;
+}
+
+@media screen and (max-height: 650px) {
+  .game-piece-tracker {
+    top: 180px; /* Push them up slightly, but stop before overlapping scores */
+    padding: 6px 10px;
+  }
+  
+  .tracker-title {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .piece-row {
+    font-size: 12px;
+    margin: 2px 0;
+  }
 }
