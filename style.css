@@ -397,7 +397,7 @@ span {
 }
 
 #red-reveal .reveal-score {
-  right: 70px;         /* Anchors the score to the right side of the red panel */
+  right: 70px;
   text-align: right;
   align-items: flex-end;
 }
@@ -413,21 +413,21 @@ span {
   position: absolute;
   bottom: -550px;
   left: 55%;
-  transform: translateX(-50%); /* Centers the box perfectly horizontal */
+  transform: translateX(-50%); 
   
   /* Box Styling */
-  background-color: rgb(236, 0, 0); /* Semi-transparent dark box background */
-  border: 0px solid rgba(255, 255, 255, 0.8); /* Subtle white border */
-  border-radius: 0px;                         /* Rounded corners */
-  padding: 10px 24px;                        /* Spacing inside the box around text */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Subtle drop shadow for depth */
+  background-color: rgb(236, 0, 0); 
+  border: 0px solid rgba(255, 255, 255, 0.8); 
+  border-radius: 0px;                        
+  padding: 10px 24px;                        
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); 
 
   /* Text Styling */
   color: #ffffff;
   font-size: 60px;
   font-weight: bold;
   text-transform: uppercase;
-  white-space: nowrap;                       /* Prevents names from wrapping to a 2nd line */
+  white-space: nowrap;                    
   z-index: 3;
   justify-content: center;
   align-content: center;
@@ -439,21 +439,20 @@ span {
   position: absolute;
   bottom: -550px;
   left: 45%;
-  transform: translateX(-50%); /* Centers the box perfectly horizontal */
+  transform: translateX(-50%); 
   
   /* Box Styling */
-  background-color: rgb(0, 0, 159); /* Semi-transparent dark box background */
-  border: 0px solid rgba(255, 255, 255, 0.8); /* Subtle white border */
-  border-radius: 0px;                         /* Rounded corners */
-  padding: 10px 24px;                        /* Spacing inside the box around text */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Subtle drop shadow for depth */
-
+  background-color: rgb(0, 0, 159); 
+  border: 0px solid rgba(255, 255, 255, 0.8); 
+  border-radius: 0px;                         
+  padding: 10px 24px;                       
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   /* Text Styling */
   color: #ffffff;
   font-size: 60px;
   font-weight: bold;
   text-transform: uppercase;
-  white-space: nowrap;                       /* Prevents names from wrapping to a 2nd line */
+  white-space: nowrap;                      
   z-index: 3;
   justify-content: center;
   align-content: center;
@@ -468,11 +467,11 @@ span {
   background-color: #e2e22a;
   color: black;
 
-  /* Centers the SVG icon and text next to each other */
+  
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;                     /* Distance between icon and text */
+  gap: 20px;
 
   font-size: 100px;
   font-weight: bold;
@@ -481,9 +480,9 @@ span {
   z-index: 10;
 }
 
-/* Controls icon sizing inside the banner */
+
 .winner-icon {
-  height: 90px;                  /* Proportional height to fit inside 150px banner */
+  height: 90px; 
   width: auto;
   filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.2));
 }
@@ -541,8 +540,8 @@ span {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .top-table {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  
+  scrollbar-width: none; 
 }
 
 .scoreboard.hidden {
@@ -564,14 +563,14 @@ span {
   bottom: 0;
   z-index: 10;
   box-sizing: border-box;
-  padding-right: 10px; /* Match scrollbar offset of top */
+  padding-right: 10px; 
 }
 
 .score-content {
   display: flex;
-  align-items: center;      /* Vertically center */
-  justify-content: center;  /* Horizontally center */
-  gap: 6px;                 /* Space between number and image */
+  align-items: center;  
+  justify-content: center;  
+  gap: 6px;                 
 }
 
 .bottom-table table {
@@ -637,7 +636,7 @@ td {
 
 @media screen and (max-height: 650px) {
   .game-piece-tracker {
-    top: 180px; /* Push them up slightly, but stop before overlapping scores */
+    top: 180px; 
     padding: 6px 10px;
   }
   
