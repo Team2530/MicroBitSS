@@ -529,15 +529,15 @@ function updatePenalties(isBlue, penalties) {
   }
 }
 
-function updateGamePiece(isblue, piece, count) {
+function updateGamePiece(isBlue, piece, count) {
 const alliance = isBlue ? "blue" : "red";
-if (peiceCounts[alliance][piece] !== undefined) {
+if (pieceCounts[alliance][piece] !== undefined) {
   pieceCounts[alliance][piece] += count;
   }
 
-const elm = document.getElementById(`${alliance}-${peice}`);
+const elm = document.getElementById(`${alliance}-${piece}`);
 if (elm) {
-  elm.innerHTML = pieceCounts [alliance][peice];
+  elm.innerHTML = pieceCounts [alliance][piece];
 }
   console.log(`Increased ${alliance} ${piece} by ${count}`);
 }
