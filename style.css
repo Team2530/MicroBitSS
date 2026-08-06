@@ -286,7 +286,7 @@ span {
 
 .breakdown-card {
   position: absolute;
-  top: 60vh;
+  top: 55vh;
   left: 50%;
   transform: translate(-50%, -50%);
   width: clamp(720px, 50vw, 1000px);
@@ -411,7 +411,7 @@ span {
 #red-reveal-name,
 .alliance-name {
   position: absolute;
-  bottom: -550px;
+  bottom: -65vh;
   left: 55%;
   transform: translateX(-50%); /* Centers the box perfectly horizontal */
   
@@ -437,7 +437,7 @@ span {
 #blue-reveal-name,
 .alliance-name {
   position: absolute;
-  bottom: -550px;
+  bottom: -65vh;
   left: 45%;
   transform: translateX(-50%); /* Centers the box perfectly horizontal */
   
