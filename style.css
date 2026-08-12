@@ -424,10 +424,9 @@ span {
 
   /* Text Styling */
   color: #ffffff;
-  font-size: 60px;
+  font-size: 40px;
   font-weight: bold;
   text-transform: uppercase;
-  white-space: nowrap;                    
   z-index: 3;
   justify-content: center;
   align-content: center;
@@ -449,10 +448,9 @@ span {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   /* Text Styling */
   color: #ffffff;
-  font-size: 60px;
+  font-size: 40px;
   font-weight: bold;
-  text-transform: uppercase;
-  white-space: nowrap;                      
+  text-transform: uppercase;             
   z-index: 3;
   justify-content: center;
   align-content: center;

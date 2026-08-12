@@ -29,6 +29,7 @@ const end = new Audio("./sounds/endbuzzer.mp3");
 const endgame = new Audio("./sounds/whistle.mp3");
 
 var started = false;
+var highScore = 0;
 
 start.preload = "auto";
 end.preload = "auto";
@@ -51,6 +52,8 @@ var currentControlMode = localStorage.getItem("controlMode") || "microbit";
  * Times for the "teleop" and "endgame" sounds to play,
  * if they are null, the sound will not play
  */
+
+// 
 const BUZZER_TIMES = {
   TELEOP: 120,
   ENDGAME: 30,
@@ -139,7 +142,7 @@ function applyControlModeUI() {
 // load matches.json (the default example) if "preload" is set to true
 window.onload = function () {
   applyControlModeUI();
-  fetch("matches/Week2Quals.json")
+  fetch("matches/Week2Finals.json")
     .then((text) => text.text())
     .then((json) => JSON.parse(json))
     .then((json) => {
@@ -263,13 +266,13 @@ function pollGamepads() {
           console.log("Button pressed:", index);
           switch(index) {
             case 0: // A
-              if (timePassed >= 110) {
+              if (timePassed >= 115) {
                 points.red += 5;
                 updateGamePiece(false, "pollen", 1);
               }
               break;
             case 1: // B
-              if (timePassed >= 20) {
+              if (timePassed >= 25) {
                 points.red += 3;
               } else {
                 points.red += 7;
@@ -277,7 +280,7 @@ function pollGamepads() {
               updateGamePiece(false, "honey", 1);
               break;
             case 2: // X
-              if (timePassed >= 20) {
+              if (timePassed >= 25) {
                 points.red += 1;
               } else {
                 points.red += 3;
@@ -285,7 +288,7 @@ function pollGamepads() {
               updateGamePiece(false, "honey", 1);
               break;
             case 3: // Y
-              if (timePassed >= 20) {
+              if (timePassed >= 25) {
                 points.red += 2;
               } else {
                 points.red += 5;
@@ -294,7 +297,7 @@ function pollGamepads() {
               updateGamePiece(false, "honey", 1);
               break;
             case 4: // LB
-              if (timePassed <= 20) {
+              if (timePassed <= 25) {
                 points.red += 3;
                 updateGamePiece(false, "leave", 1);
               }
@@ -324,13 +327,13 @@ function pollGamepads() {
           console.log("Button pressed:", index);
           switch(index) {
             case 0: // A
-              if (timePassed >= 110) {
+              if (timePassed >= 115) {
                 points.blue += 5;
                 updateGamePiece(true, "pollen", 1);
               }
               break;
             case 1: // B
-              if (timePassed >= 20) {
+              if (timePassed >= 25) {
                 points.blue += 3;
               } else {
                 points.blue += 7;
@@ -338,7 +341,7 @@ function pollGamepads() {
               updateGamePiece(true, "honey", 1);
               break;
             case 2: // X
-              if (timePassed >= 20) {
+              if (timePassed >= 25) {
                 points.blue += 1;
               } else {
                 points.blue += 3;
@@ -346,7 +349,7 @@ function pollGamepads() {
               updateGamePiece(true, "honey", 1);
               break;
             case 3: // Y
-              if (timePassed >= 20) {
+              if (timePassed >= 25) {
                 points.blue += 2;
               } else {
                 points.blue += 5;
@@ -354,7 +357,7 @@ function pollGamepads() {
               updateGamePiece(true, "honey", 1);
               break;
             case 4: // LB
-              if (timePassed <= 20) {
+              if (timePassed <= 25) {
                 points.blue += 3;
                 updateGamePiece(true, "leave", 1);
               }
@@ -769,6 +772,11 @@ function toggleScores() {
       }
     }
   } 
+  if(highScore < Math.max(highScore, points.red + penalties.red, points.blue + penalties.blue)){
+    highScore = Math.max(highScore, points.red + penalties.red, points.blue + penalties.blue);
+    console.log("New high score: " + highScore);
+    console.log(`${winner} accomplished a new high score.`);
+  }
 }
 
 
