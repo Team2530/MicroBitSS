@@ -1,0 +1,37 @@
+{
+   "preload": true,
+   "bracket": false,
+   "icons" : {},
+   "teams": {
+      "Team 1": {
+         "name": "The Krabby Patties",
+         "icon": ""
+      },
+      "Team 2": {
+         "name": "The Electric Bees",
+         "icon": ""
+      },
+      "Team 3": {
+         "name": "The Fishies",
+         "icon": ""
+      },
+      "Team 4": {
+         "name": "The Bee's Knees",
+         "icon": ""
+      },
+      "Team 5": {
+         "name": "Monstrux Fire&Ice 2277",
+         "icon": ""
+      },
+      "Team 6": {
+         "name": "Simon's Fish",
+         "icon": ""
+      }
+   },
+   "m1": {
+      "red1": 6,
+      "red2": 1,
+      "blue1": 2,
+      "blue2": 5
+   }
+}

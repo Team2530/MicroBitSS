@@ -3,77 +3,105 @@
    "bracket": false,
    "icons" : {},
    "teams": {
+      "Team 0" : {
+         "name": "Filler",
+         "icon": ""
+      },
       "Team 1": {
-         "name": "Team 1",
+         "name": "The Krabby Patties",
          "icon": ""
       },
       "Team 2": {
-         "name": "Team 2",
+         "name": "The Electric Bees",
          "icon": ""
       },
       "Team 3": {
-         "name": "Team 3",
+         "name": "The Fishies",
          "icon": ""
       },
       "Team 4": {
-         "name": "Team 4",
+         "name": "The Bee's Knees",
          "icon": ""
       },
       "Team 5": {
-         "name": "Team 5",
+         "name": "Monstrux Fire&Ice 2277",
          "icon": ""
       },
       "Team 6": {
-         "name": "Team 6",
+         "name": "Simon's Fish",
          "icon": ""
       }
    },
    "m1": {
+      "red1": 3,
+      "red2": 4,
+      "blue1": 1,
+      "blue2": 2
+   },
+   "m2": {
+      "red1": 1,
+      "red2": 6,
+      "blue1": 3,
+      "blue2": 5
+   },
+   "m3": {
+      "red1": 5,
+      "red2": 6,
+      "blue1": 2,
+      "blue2": 4
+   },
+   "m4": {
+      "red1": 2,
+      "red2": 5,
+      "blue1": 1,
+      "blue2": 3
+   },
+   "m5": {
+      "red1": 1,
+      "red2": 5,
+      "blue1": 4,
+      "blue2": 6
+   },
+   "m6": {
+      "red1": 3,
+      "red2": 4,
+      "blue1": 2,
+      "blue2": 6
+   },
+   "m7": {
       "red1": 1,
       "red2": 2,
       "blue1": 3,
       "blue2": 4
    },
-   "m2": {
-      "red1": 5,
-      "red2": 6,
-      "blue1": 1,
-      "blue2": 2
-   },
-   "m3": {
+   "m8": {
       "red1": 3,
+      "red2": 5,
+      "blue1": 1,
+      "blue2": 6
+   },
+   "m9": {
+      "red1": 2,
       "red2": 4,
       "blue1": 5,
       "blue2": 6
    },
-   "m4": {
+   "m10": {
       "red1": 1,
       "red2": 3,
       "blue1": 5,
-      "blue2": 2
-   },
-   "m5": {
-      "red1": 4,
-      "red2": 6,
-      "blue1": 2,
-      "blue2": 3
-   },
-   "m6": {
-      "red1": 5,
-      "red2": 1,
-      "blue1": 4,
       "blue2": 6
    },
-   "m7": {
-      "red1": 2,
-      "red2": 3,
+   "m11": {
+      "red1": 4,
+      "red2": 6,
       "blue1": 1,
       "blue2": 5
    },
-   "m8": {
-      "red1": 6,
-      "red2": 4,
+   "m12": {
+      "red1": 2,
+      "red2": 6,
       "blue1": 3,
-      "blue2": 2
+      "blue2": 4
    }
 }
